@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Crypto Volume Scanner</title>
+<style>
+:root{--bg:#0f1218;--card:#181d27;--tx:#e6e9ef;--mu:#8b93a5;--gr:#22c55e;--rd:#ef4444;--ac:#f0b90b}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:14px system-ui,sans-serif;padding:12px}
+h1{font-size:18px;margin:0 0 4px}
+.sub{color:var(--mu);font-size:12px;margin-bottom:10px}
+.bar{display:flex;flex-wrap:wrap;gap:8px;background:var(--card);padding:10px;border-radius:8px;margin-bottom:10px;align-items:end}
+.bar label{display:flex;flex-direction:column;font-size:11px;color:var(--mu);gap:3px}
+select,input{background:var(--bg);color:var(--tx);border:1px solid #2a3140;border-radius:5px;padding:6px;width:90px}
+button{background:var(--ac);color:#000;border:0;border-radius:5px;padding:8px 14px;font-weight:600;cursor:pointer}
+#prog{height:4px;background:#2a3140;border-radius:2px;margin-bottom:8px}
+#pb{height:100%;width:0;background:var(--ac);border-radius:2px;transition:width .2s}
+#st{color:var(--mu);font-size:12px;margin-bottom:8px}
+.wrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;min-width:640px;background:var(--card);border-radius:8px}
+th,td{padding:8px 10px;text-align:right;border-bottom:1px solid #222937;white-space:nowrap}
+th:first-child,td:first-child{text-align:left}
+th{color:var(--mu);font-size:11px;font-weight:600;cursor:pointer}
+a{color:var(--tx);text-decoration:none;font-weight:600}
+.g{color:var(--gr)}.r{color:var(--rd)}
+.s{display:inline-block;min-width:24px;text-align:center;border-radius:4px;padding:2px 6px;font-weight:700;background:#2a3140}
+.s.hi{background:var(--gr);color:#000}.s.mid{background:var(--ac);color:#000}
+.note{color:var(--mu);font-size:11px;margin-top:10px;line-height:1.5}
+</style>
+</head>
+<body>
+<h1>Crypto Volume Scanner</h1>
+<div class="sub">Binance Spot + Binance Futures + Bybit Futures. Free, no API key, runs in your browser.</div>
+
+<div class="bar">
+  <label>Coins<select id="n"><option>200</option><option selected>250</option><option>300</option><option>400</option></select></label>
+  <label>Candle<select id="iv"><option value="15m">15m</option><option value="1h" selected>1h</option><option value="4h">4h</option></select></label>
+  <label>Min volume x<input id="vr" type="number" value="3" step="0.5" min="1"></label>
+  <label>Max price move %<input id="mm" type="number" value="4" step="0.5" min="0"></label>
+  <label>Auto refresh<select id="ar"><option value="0">Off</option><option value="300" selected>5 min</option><option value="600">10 min</option></select></label>
+  <button id="go">Scan now</button>
+</div>
+<div id="prog"><div id="pb"></div></div>
+<div id="st">Ready.</div>
+
+<div class="wrap"><table>
+<thead><tr>
+<th data-k="sym">Coin</th><th data-k="score">Score</th><th data-k="sv">Spot vol x</th>
+<th data-k="fv">Fut vol x</th><th data-k="bv">Bybit vol x</th><th data-k="oi">OI 6h %</th>
+<th data-k="fund">Funding %</th><th data-k="mv">Candle %</th>
+</tr></thead>
+<tbody id="tb"></tbody>
+</table></div>
+
+<div class="note">
+Score: +2 spot volume spike with small price move, +2 futures volume spike, +1 Bybit volume spike, +2 open interest up 5%+ in 6h, +1 funding not overheated, +1 green candle. Score 6+ is the strongest signal.<br>
+This finds unusual activity. It cannot predict pumps, and accuracy is never 99%. Many signals fail. Always use a stop-loss. Not financial advice.
+</div>
+
+<script>
+const BN="https://api.binance.com/api/v3",BF="https://fapi.binance.com/fapi/v1",BFD="https://fapi.binance.com/futures/data",BY="https://api.bybit.com/v5/market";
+const IV={"15m":["15m","15"],"1h":["1h","60"],"4h":["4h","240"]};
+const $=id=>document.getElementById(id);
+let rows=[],sortK="score",sortD=-1,timer=null,busy=false;
+
+async function j(url){
+  try{const r=await fetch(url);if(!r.ok)return null;return await r.json();}catch(e){return null;}
+}
+async function pool(items,fn,n=10,onp){
+  let i=0,done=0;
+  await Promise.all(Array.from({length:n},async()=>{
+    while(i<items.length){const it=items[i++];await fn(it);done++;onp&&onp(done,items.length);}
+  }));
+}
+// candles: array of {o,c,v} oldest -> newest, last one unfinished
+function stats(c){
+  if(!c||c.length<22)return null;
+  c=c.slice(0,-1);
+  const v=c.map(x=>x.v),avg=v.slice(-21,-1).reduce((a,b)=>a+b,0)/20;
+  if(!avg)return null;
+  const l=c[c.length-1];
+  return{ratio:v[v.length-1]/avg,move:(l.c-l.o)/l.o*100};
+}
+const fromBn=k=>k&&k.map(x=>({o:+x[1],c:+x[4],v:+x[5]}));
+const fromBy=d=>d&&d.result&&d.result.list?d.result.list.slice().reverse().map(x=>({o:+x[1],c:+x[4],v:+x[5]})):null;
+
+async function scan(){
+  if(busy)return;busy=true;$("go").disabled=true;
+  const N=+$("n").value,iv=$("iv").value,vr=+$("vr").value,mm=+$("mm").value;
+  $("st").textContent="Loading coin list...";$("pb").style.width="0";
+  const tk=await j(BN+"/ticker/24hr");
+  if(!tk){$("st").textContent="Cannot reach Binance. Check VPN/region or rate limit (wait 1 minute).";busy=false;$("go").disabled=false;return;}
+  const list=tk.filter(t=>t.symbol.endsWith("USDT")&&!/(UP|DOWN|BULL|BEAR)USDT$/.test(t.symbol)&&!/^(USDC|FDUSD|TUSD|BUSD|USDP|EUR|DAI)/.test(t.symbol))
+    .sort((a,b)=>+b.quoteVolume-+a.quoteVolume).slice(0,N);
+  const pi=await j(BF+"/premiumIndex");
+  const fund={};(pi||[]).forEach(x=>fund[x.symbol]=+x.lastFundingRate*100);
+  const out=[];
+  await pool(list,async t=>{
+    const s=t.symbol,hasF=s in fund;
+    const [sk,fk,byk]=await Promise.all([
+      j(`${BN}/klines?symbol=${s}&interval=${IV[iv][0]}&limit=23`),
+      hasF?j(`${BF}/klines?symbol=${s}&interval=${IV[iv][0]}&limit=23`):null,
+      hasF?j(`${BY}/kline?category=linear&symbol=${s}&interval=${IV[iv][1]}&limit=23`):null
+    ]);
+    const sp=stats(fromBn(sk)),fu=stats(fromBn(fk)),by=stats(fromBy(byk));
+    if(!sp)return;
+    let sc=0;
+    if(sp.ratio>=vr&&Math.abs(sp.move)<=mm)sc+=2;
+    if(fu&&fu.ratio>=vr)sc+=2;
+    if(by&&by.ratio>=vr)sc+=1;
+    if(hasF&&Math.abs(fund[s])<0.03)sc+=1;
+    if(sp.move>0)sc+=1;
+    out.push({sym:s,score:sc,sv:sp.ratio,fv:fu?fu.ratio:null,bv:by?by.ratio:null,oi:null,fund:hasF?fund[s]:null,mv:sp.move});
+  },8,(d,t)=>{$("pb").style.width=(d/t*100)+"%";$("st").textContent=`Scanning ${d}/${t} coins...`;});
+
+  // open interest only for top candidates (saves API limits)
+  const cand=out.filter(r=>r.fund!==null).sort((a,b)=>b.score-a.score).slice(0,40);
+  $("st").textContent="Checking open interest...";
+  await pool(cand,async r=>{
+    const d=await j(`${BFD}/openInterestHist?symbol=${r.sym}&period=1h&limit=6`);
+    if(d&&d.length>1){const a=+d[0].sumOpenInterestValue,b=+d[d.length-1].sumOpenInterestValue;if(a){r.oi=(b-a)/a*100;if(r.oi>=5)r.score+=2;}}
+  },5);
+
+  rows=out.filter(r=>r.score>=3);
+  render();
+  $("st").textContent=`Done ${new Date().toLocaleTimeString()}. Scanned ${out.length} coins, ${rows.length} flagged.`;
+  $("pb").style.width="100%";busy=false;$("go").disabled=false;
+}
+
+const f=(v,d=1)=>v==null?"-":v.toFixed(d);
+function render(){
+  rows.sort((a,b)=>{
+    const x=a[sortK],y=b[sortK];
+    if(sortK==="sym")return sortD*(x<y?-1:1);
+    return sortD*((x??-1e9)-(y??-1e9));
+  });
+  $("tb").innerHTML=rows.slice(0,60).map(r=>{
+    const cls=r.score>=6?"hi":r.score>=4?"mid":"";
+    const base=r.sym.replace("USDT","");
+    return `<tr><td><a target="_blank" rel="noopener" href="https://www.tradingview.com/chart/?symbol=BINANCE:${r.sym}">${base}</a></td>
+<td><span class="s ${cls}">${r.score}</span></td><td>${f(r.sv)}x</td><td>${f(r.fv)}${r.fv!=null?"x":""}</td><td>${f(r.bv)}${r.bv!=null?"x":""}</td>
+<td class="${r.oi>=5?"g":""}">${f(r.oi)}</td><td>${f(r.fund,3)}</td><td class="${r.mv>=0?"g":"r"}">${f(r.mv,2)}</td></tr>`;
+  }).join("")||`<tr><td colspan="8" style="text-align:center;color:#8b93a5">Nothing unusual right now.</td></tr>`;
+}
+document.querySelectorAll("th").forEach(th=>th.onclick=()=>{
+  const k=th.dataset.k;sortD=(k===sortK)?-sortD:-1;sortK=k;render();
+});
+function setTimer(){
+  clearInterval(timer);const s=+$("ar").value;
+  if(s)timer=setInterval(scan,s*1000);
+}
+$("ar").onchange=setTimer;$("go").onclick=scan;
+setTimer();scan();
+</script>
+</body>
+</html>
