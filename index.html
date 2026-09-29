@@ -63,6 +63,7 @@ a{color:var(--tx);text-decoration:none;font-weight:700}
   <label>Volume spike % (min)<input id="mv" type="number" value="100" min="10" step="10"></label>
   <label>Max 1h price move %<input id="mm" type="number" value="3" min="0" step="0.5"></label>
   <label>Show coins where<select id="rm" style="width:150px"><option value="either">Volume OR OI</option><option value="vol">Volume only</option><option value="oi">OI only</option><option value="both">Volume AND OI</option></select></label>
+  <label>Min 15m volume increase ($M)<input id="dv15" type="number" value="5" min="0" step="0.5"></label>
   <label>Min OI rise % (1h)<input id="mo" type="number" value="1" min="0" step="0.5"></label>
   <label>Min 24h volume ($M)<input id="md" type="number" value="1" min="0" step="0.5"></label>
   <button id="rf">Refresh now</button>
@@ -70,7 +71,7 @@ a{color:var(--tx);text-decoration:none;font-weight:700}
 
 <h2 class="sec">Volume or Open Interest rising (keeps increasing)</h2>
 <div class="wrap"><table style="min-width:900px">
-<thead><tr><th>Coin</th><th>Exch</th><th>Price</th><th>24h %</th><th>Volume rising</th><th>Last 15m vol</th><th>Vol 1h</th><th>OI change (1h)</th><th>OI total</th><th>Funding %/8h</th><th>Signal</th></tr></thead>
+<thead><tr><th>Coin</th><th>Exch</th><th>Price</th><th>24h %</th><th>15m volume increase</th><th>Last 15m vol</th><th>Vol 1h</th><th>OI change (1h)</th><th>OI total</th><th>Funding %/8h</th><th>Signal</th></tr></thead>
 <tbody id="tb2"></tbody>
 </table></div>
 
@@ -91,7 +92,7 @@ a{color:var(--tx);text-decoration:none;font-weight:700}
 </table></div>
 
 <div class="note">
-Top section: shows coins where volume is up 3+ 15m candles in a row OR open interest is up 3 checks in a row (15m steps, last hour, above your minimum rise). Coins with both are listed first and tagged BOTH. The dropdown lets you pick: Volume only (volume rising, ignore OI), OI only (OI rising, ignore volume), Volume OR OI, or Volume AND OI. OI history comes from Binance/Bybit coins only. Stocks, ETFs and commodity perps are hidden by default (Crypto only). Combined data: 24h volume is the sum across exchanges, open interest is the sum of Hyperliquid + Bybit + OKX, funding is the average (approx. per 8h). Exch letters: H Hyperliquid, B Binance, Y Bybit, O OKX.<br>
+Top section: shows coins where the latest 15m volume is above normal by at least your minimum dollar amount (default $5M) OR open interest is up 3 checks in a row (15m steps, last hour, above your minimum rise). Coins with both are listed first and tagged BOTH. The dropdown lets you pick: Volume only (volume rising, ignore OI), OI only (OI rising, ignore volume), Volume OR OI, or Volume AND OI. OI history comes from Binance/Bybit coins only. Stocks, ETFs and commodity perps are hidden by default (Crypto only). Combined data: 24h volume is the sum across exchanges, open interest is the sum of Hyperliquid + Bybit + OKX, funding is the average (approx. per 8h). Exch letters: H Hyperliquid, B Binance, Y Bybit, O OKX.<br>
 Under each % is the extra dollar volume: latest window volume minus the normal (average) volume, e.g. +$5.2M. Vol % = latest closed window vs the average of earlier windows of the same size (15m vs previous 20 candles, 1h vs previous 24h, 4h vs previous 6 windows, 24h vs the 24h before). +200% means 3x normal. Candles come from Binance first, then Bybit, then Hyperliquid, so the columns fill in over a minute or two (Hyperliquid-only coins are slower).<br>
 Pre-pump = big volume spike while the 1h price move is still small. Signal (0 to 7) adds up spikes across timeframes. It finds unusual activity and cannot predict pumps. Use a stop-loss. Not financial advice.
 </div>
@@ -230,7 +231,7 @@ async function tickOi(){
     if(o.tf||!(o.src==="bn"||o.src==="by")||o.dv<(+$("md").value||0)*1e6)continue;
     const age=now-(o.oat||0);
     if(o.oat&&age<90000)continue;
-    const sc=o.oat?age*(o.vs>=3?3:1):1e12+o.dv;
+    const sc=o.oat?age*(o.d15>=(+$("dv15").value||0)*1e6?3:1):1e12+o.dv;
     if(sc>bs){bs=sc;best=o}
   }
   if(!best)return;
@@ -325,17 +326,18 @@ function render(){
   }).join("")||'<tr><td colspan="13" style="text-align:center;color:#7d8b99;padding:16px">Nothing here yet.</td></tr>';
   const mo=+$("mo").value||0,rm=$("rm").value;
   const fresh=o=>Date.now()-(o.oat||0)<600000;
-  const vOk=o=>o.vs>=3,oOk=o=>o.os>=3&&o.oiPct>=mo&&fresh(o);
+  const th=(+$("dv15").value||0)*1e6;
+  const vOk=o=>o.d15!=null&&o.d15>=th,oOk=o=>o.os>=3&&o.oiPct>=mo&&fresh(o);
   const rise=all.filter(o=>o.dv>=md&&(rm==="both"?vOk(o)&&oOk(o):rm==="vol"?vOk(o):rm==="oi"?oOk(o):vOk(o)||oOk(o)))
     .sort((a,b)=>((oOk(b)&&vOk(b))-(oOk(a)&&vOk(a)))||b.score-a.score||b.dv-a.dv).slice(0,40);
   $("tb2").innerHTML=rise.map(o=>{
     const v=vOk(o),oi=oOk(o),ty=v&&oi?"BOTH":v?"VOLUME":"OI";
     return `<tr><td><a target="_blank" rel="noopener" href="${link(o)}">${o.base}</a><span class="tag">${ty}</span></td>
 <td class="ex">${Object.keys(o.ex).map(k=>LET[k]).join(" ")}</td><td>${fp(o.price)}</td><td class="${o.p24>=0?"g":"r"}">${o.p24==null?"-":o.p24.toFixed(2)+"%"}</td>
-<td class="${v?"g":"mu"}">${v?o.vs+" candles in a row":"-"}</td><td>$${fm(o.lq)}</td><td>${pct(o.v1,mv,o.d1)}</td>
+<td class="${v?"g":"mu"}">${o.d15==null?"...":dl(o.d15)}</td><td>$${fm(o.lq)}</td><td>${pct(o.v1,mv,o.d1)}</td>
 <td class="${oi?"g":"mu"}">${o.oiPct==null||!fresh(o)?"...":(o.oiPct>=0?"+":"")+o.oiPct.toFixed(2)+"%"} <span class="mu">${o.os!=null&&fresh(o)?"("+o.os+" rises)":""}</span></td>
 <td>$${fm(o.oi)}</td><td>${o.fund==null?"-":o.fund.toFixed(4)}</td>
-<td><span class="sc ${o.score>=5?"h":o.score>=3?"m":""}">${o.score}</span></td></tr>`}).join("")||'<tr><td colspan="11" style="text-align:center;color:#7d8b99;padding:14px">None right now. Volume rising = 3+ 15m candles in a row. OI rising = 3 checks in a row (15m steps). Fills in a few minutes after opening the page.</td></tr>';
+<td><span class="sc ${o.score>=5?"h":o.score>=3?"m":""}">${o.score}</span></td></tr>`}).join("")||'<tr><td colspan="11" style="text-align:center;color:#7d8b99;padding:14px">None right now. Volume signal = latest 15m volume is above normal by your minimum dollar amount. OI rising = 3 checks in a row (15m steps). Fills in a few minutes after opening the page.</td></tr>';
   $("pgb").style.width=(elig?loaded/elig*100:0)+"%";
   $("st").textContent=`${elig} coins | volume data ${loaded}/${elig} | ${all.filter(o=>o.pre&&o.dv>=md).length} pre-pump | refresh in ${left}s`;
   $("src").innerHTML="Sources: "+Object.keys(NAME).map(k=>{
@@ -353,7 +355,7 @@ $("tb").onclick=e=>{
   const n=e.target.dataset&&e.target.dataset.s;if(!n)return;
   wl.has(n)?wl.delete(n):wl.add(n);saveWl();render();
 };
-["q","mv","mm","md","ty","mo","rm"].forEach(id=>$(id).oninput=render);
+["q","mv","mm","md","ty","mo","rm","dv15"].forEach(id=>$(id).oninput=render);
 $("rf").onclick=()=>{left=+$("ri").value;loadAll().then(render)};
 $("nt").onclick=async()=>{
   if(!window.Notification){alert("Notifications not supported in this browser.");return}
