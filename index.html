@@ -2,201 +2,242 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Crypto Volume Scanner</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#50d2c1">
+<title>Volume Signal - Hyperliquid Screener</title>
 <style>
-:root{--bg:#0f1218;--card:#181d27;--tx:#e6e9ef;--mu:#8b93a5;--gr:#22c55e;--rd:#ef4444;--ac:#f0b90b}
+:root{--bg:#0b0f14;--card:#131a22;--line:#1e2833;--tx:#e4eaf0;--mu:#7d8b99;--ac:#50d2c1;--gr:#2ecc71;--rd:#ef5350}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--tx);font:14px system-ui,sans-serif;padding:12px}
-h1{font-size:18px;margin:0 0 4px}
-.sub{color:var(--mu);font-size:12px;margin-bottom:10px}
-.bar{display:flex;flex-wrap:wrap;gap:8px;background:var(--card);padding:10px;border-radius:8px;margin-bottom:10px;align-items:end}
-.bar label{display:flex;flex-direction:column;font-size:11px;color:var(--mu);gap:3px}
-select,input{background:var(--bg);color:var(--tx);border:1px solid #2a3140;border-radius:5px;padding:6px;width:90px}
-button{background:var(--ac);color:#000;border:0;border-radius:5px;padding:8px 14px;font-weight:600;cursor:pointer}
-#prog{height:4px;background:#2a3140;border-radius:2px;margin-bottom:8px}
-#pb{height:100%;width:0;background:var(--ac);border-radius:2px;transition:width .2s}
-#st{color:var(--mu);font-size:12px;margin-bottom:8px}
-.wrap{overflow-x:auto}
-table{border-collapse:collapse;width:100%;min-width:640px;background:var(--card);border-radius:8px}
-th,td{padding:8px 10px;text-align:right;border-bottom:1px solid #222937;white-space:nowrap}
-th:first-child,td:first-child{text-align:left}
-th{color:var(--mu);font-size:11px;font-weight:600;cursor:pointer}
-a{color:var(--tx);text-decoration:none;font-weight:600}
-.g{color:var(--gr)}.r{color:var(--rd)}
-.s{display:inline-block;min-width:24px;text-align:center;border-radius:4px;padding:2px 6px;font-weight:700;background:#2a3140}
-.s.hi{background:var(--gr);color:#000}.s.mid{background:var(--ac);color:#000}
-.sec{font-size:15px;margin:14px 0 6px}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:8px;margin-bottom:8px}
-.pick{background:var(--card);border-radius:8px;padding:10px;border-left:3px solid var(--gr);font-size:12px;line-height:1.6}
-.pick b{font-size:15px}.pick .mu{color:var(--mu)}
-.chip{background:var(--card);border-radius:6px;padding:6px 10px;font-size:12px;display:inline-block;margin:0 6px 6px 0}
-.note{color:var(--mu);font-size:11px;margin-top:10px;line-height:1.5}
+body{margin:0;background:var(--bg);color:var(--tx);font:13px system-ui,sans-serif;padding:10px}
+h1{font-size:17px;margin:0;color:var(--ac);letter-spacing:.5px}
+h1 span{color:var(--tx);font-weight:400;font-size:12px;margin-left:6px}
+.top{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:8px}
+.top .sp{flex:1}
+.stat{color:var(--mu);font-size:12px}
+.bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;background:var(--card);padding:8px;border-radius:8px;margin-bottom:8px}
+.bar label{display:flex;flex-direction:column;font-size:10px;color:var(--mu);gap:2px}
+select,input{background:var(--bg);color:var(--tx);border:1px solid var(--line);border-radius:5px;padding:5px;width:80px}
+input#q{width:110px}
+button{background:var(--line);color:var(--tx);border:0;border-radius:5px;padding:7px 11px;cursor:pointer;font-size:12px}
+button.on{background:var(--ac);color:#000;font-weight:700}
+.tabs{display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap}
+#pg{height:3px;background:var(--line);border-radius:2px;margin-bottom:8px}
+#pgb{height:100%;width:0;background:var(--ac);border-radius:2px;transition:width .4s}
+.wrap{overflow-x:auto;border-radius:8px}
+table{border-collapse:collapse;width:100%;min-width:860px;background:var(--card)}
+th,td{padding:7px 9px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap}
+th{color:var(--mu);font-size:10px;font-weight:600;cursor:pointer;position:sticky;top:0;background:var(--card)}
+th:nth-child(-n+2),td:nth-child(-n+2){text-align:left}
+td.s{cursor:pointer;color:#3a4653;width:24px;padding-right:0}
+td.s.on{color:#f5c518}
+a{color:var(--tx);text-decoration:none;font-weight:700}
+.g{color:var(--gr)}.r{color:var(--rd)}.mu{color:var(--mu)}
+.v{font-weight:600}
+.v.w{color:#9be7b4}.v.h{color:#000;background:var(--gr);border-radius:4px;padding:2px 5px}
+.v.n{color:var(--rd);font-weight:400}
+.sc{display:inline-block;min-width:22px;text-align:center;border-radius:4px;padding:2px 5px;font-weight:700;background:var(--line)}
+.sc.m{background:#f5c518;color:#000}.sc.h{background:var(--gr);color:#000}
+.tag{background:var(--ac);color:#000;border-radius:4px;padding:1px 5px;font-size:10px;font-weight:700;margin-left:4px}
+.note{color:var(--mu);font-size:11px;line-height:1.5;margin-top:10px}
 </style>
 </head>
 <body>
-<h1>Crypto Volume Scanner</h1>
-<div class="sub">Binance Spot + Binance Futures + Bybit Futures. Free, no API key, runs in your browser.</div>
+<div class="top">
+  <h1>VOLUME SIGNAL<span>Hyperliquid perpetuals screener</span></h1>
+  <div class="sp"></div>
+  <div class="stat" id="st">Loading markets...</div>
+  <button id="nt">Alerts off</button>
+</div>
 
 <div class="bar">
-  <label>Coins<select id="n"><option>200</option><option selected>250</option><option>300</option><option>400</option></select></label>
-  <label>Candle<select id="iv"><option value="15m">15m</option><option value="1h" selected>1h</option><option value="4h">4h</option></select></label>
-  <label>Min volume x<input id="vr" type="number" value="3" step="0.5" min="1"></label>
-  <label>Max price move %<input id="mm" type="number" value="4" step="0.5" min="0"></label>
-  <label>Auto refresh<select id="ar"><option value="0">Off</option><option value="300" selected>5 min</option><option value="600">10 min</option></select></label>
-  <button id="go">Scan now</button>
+  <label>Search<input id="q" placeholder="BTC"></label>
+  <label>Auto refresh<select id="ri"><option value="15">15s</option><option value="30" selected>30s</option><option value="60">60s</option></select></label>
+  <label>Volume spike % (min)<input id="mv" type="number" value="100" min="10" step="10"></label>
+  <label>Max 1h price move %<input id="mm" type="number" value="3" min="0" step="0.5"></label>
+  <button id="rf">Refresh now</button>
 </div>
-<div id="prog"><div id="pb"></div></div>
-<div id="st">Ready.</div>
 
-<h2 class="sec">Top picks to watch</h2>
-<div id="picks" class="grid"><div class="chip">Run a scan first.</div></div>
-<h2 class="sec">15m pre-pump watch (volume rising, price still flat)</h2>
-<div id="pre"><span class="chip">Run a scan first.</span></div>
-<h2 class="sec">All flagged coins</h2>
+<div class="tabs">
+  <button data-t="all" class="on">All markets</button>
+  <button data-t="pre">Pre-pump</button>
+  <button data-t="wl">Watchlist</button>
+</div>
+<div id="pg"><div id="pgb"></div></div>
+
 <div class="wrap"><table>
 <thead><tr>
-<th data-k="sym">Coin</th><th data-k="score">Score</th><th data-k="sv">Spot vol x</th>
-<th data-k="fv">Fut vol x</th><th data-k="bv">Bybit vol x</th><th data-k="oi">OI 6h %</th>
-<th data-k="fund">Funding %</th><th data-k="mv">Candle %</th>
+<th></th><th data-k="name">Coin</th><th data-k="price">Price</th><th data-k="p24">24h %</th>
+<th data-k="v15">Vol 15m %</th><th data-k="v1">Vol 1h %</th><th data-k="v4">Vol 4h %</th><th data-k="v24">Vol 24h %</th>
+<th data-k="dv">24h volume</th><th data-k="oi">Open interest</th><th data-k="fund">Funding %/h</th><th data-k="score">Signal</th>
 </tr></thead>
 <tbody id="tb"></tbody>
 </table></div>
 
-<div class="note">Picks show an example stop (1.5x ATR) and target (3x ATR) on 15m candles. These are risk-management examples, not advice or a guarantee.<br>
-Score: +2 spot volume spike with small price move, +2 futures volume spike, +1 Bybit volume spike, +2 open interest up 5%+ in 6h, +1 funding not overheated, +1 green candle. Score 6+ is the strongest signal.<br>
-This finds unusual activity. It cannot predict pumps, and accuracy is never 99%. Many signals fail. Always use a stop-loss. Not financial advice.
+<div class="note">
+Vol % = volume of the latest closed window vs the average of earlier windows of the same size. 15m: last candle vs previous 20 candles. 1h: last hour vs previous 24 hours. 4h: last 4 hours vs previous 6 windows. 24h: last 24h vs the 24h before. Example: +200% means 3x normal volume.<br>
+Pre-pump = big volume spike while the 1h price move is still small. Signal score (0 to 7) adds up spikes across timeframes. It finds unusual activity, it cannot predict pumps. Use a stop-loss. Not financial advice.<br>
+Data: Hyperliquid public API, no key needed. Candle data loads gradually (API rate limit), highest volume coins first, then keeps refreshing hot coins.
 </div>
 
 <script>
-const BN="https://api.binance.com/api/v3",BF="https://fapi.binance.com/fapi/v1",BFD="https://fapi.binance.com/futures/data",BY="https://api.bybit.com/v5/market";
-const IV={"15m":["15m","15"],"1h":["1h","60"],"4h":["4h","240"]};
+const API="https://api.hyperliquid.xyz/info";
 const $=id=>document.getElementById(id);
-let rows=[],sortK="score",sortD=-1,timer=null,busy=false;
+const coins=new Map();
+let tab="all",sk="score",sd=-1,left=0,hold=0,busy=false,alerts=false;
+let wl=new Set();
+try{wl=new Set(JSON.parse(localStorage.getItem("wl")||"[]"))}catch(e){}
+const saveWl=()=>{try{localStorage.setItem("wl",JSON.stringify([...wl]))}catch(e){}};
 
-async function j(url){
-  try{const r=await fetch(url);if(!r.ok)return null;return await r.json();}catch(e){return null;}
-}
-async function pool(items,fn,n=10,onp){
-  let i=0,done=0;
-  await Promise.all(Array.from({length:n},async()=>{
-    while(i<items.length){const it=items[i++];await fn(it);done++;onp&&onp(done,items.length);}
-  }));
-}
-// candles: array of {o,c,v} oldest -> newest, last one unfinished
-function stats(c){
-  if(!c||c.length<22)return null;
-  c=c.slice(0,-1);
-  const v=c.map(x=>x.v),avg=v.slice(-21,-1).reduce((a,b)=>a+b,0)/20;
-  if(!avg)return null;
-  const l=c[c.length-1];
-  return{ratio:v[v.length-1]/avg,move:(l.c-l.o)/l.o*100};
-}
-const fromBn=k=>k&&k.map(x=>({o:+x[1],c:+x[4],v:+x[5]}));
-const fromBy=d=>d&&d.result&&d.result.list?d.result.list.slice().reverse().map(x=>({o:+x[1],c:+x[4],v:+x[5]})):null;
-
-async function scan(){
-  if(busy)return;busy=true;$("go").disabled=true;
-  const N=+$("n").value,iv=$("iv").value,vr=+$("vr").value,mm=+$("mm").value;
-  $("st").textContent="Loading coin list...";$("pb").style.width="0";
-  const tk=await j(BN+"/ticker/24hr");
-  if(!tk){$("st").textContent="Cannot reach Binance. Check VPN/region or rate limit (wait 1 minute).";busy=false;$("go").disabled=false;return;}
-  const list=tk.filter(t=>t.symbol.endsWith("USDT")&&!/(UP|DOWN|BULL|BEAR)USDT$/.test(t.symbol)&&!/^(USDC|FDUSD|TUSD|BUSD|USDP|EUR|DAI)/.test(t.symbol))
-    .sort((a,b)=>+b.quoteVolume-+a.quoteVolume).slice(0,N);
-  const pi=await j(BF+"/premiumIndex");
-  const fund={};(pi||[]).forEach(x=>fund[x.symbol]=+x.lastFundingRate*100);
-  const out=[];
-  await pool(list,async t=>{
-    const s=t.symbol,hasF=s in fund;
-    const [sk,fk,byk]=await Promise.all([
-      j(`${BN}/klines?symbol=${s}&interval=${IV[iv][0]}&limit=23`),
-      hasF?j(`${BF}/klines?symbol=${s}&interval=${IV[iv][0]}&limit=23`):null,
-      hasF?j(`${BY}/kline?category=linear&symbol=${s}&interval=${IV[iv][1]}&limit=23`):null
-    ]);
-    const sp=stats(fromBn(sk)),fu=stats(fromBn(fk)),by=stats(fromBy(byk));
-    if(!sp)return;
-    let sc=0;
-    if(sp.ratio>=vr&&Math.abs(sp.move)<=mm)sc+=2;
-    if(fu&&fu.ratio>=vr)sc+=2;
-    if(by&&by.ratio>=vr)sc+=1;
-    if(hasF&&Math.abs(fund[s])<0.03)sc+=1;
-    if(sp.move>0)sc+=1;
-    out.push({sym:s,score:sc,sv:sp.ratio,fv:fu?fu.ratio:null,bv:by?by.ratio:null,oi:null,fund:hasF?fund[s]:null,mv:sp.move});
-  },8,(d,t)=>{$("pb").style.width=(d/t*100)+"%";$("st").textContent=`Scanning ${d}/${t} coins...`;});
-
-  // open interest only for top candidates (saves API limits)
-  const cand=out.slice().sort((a,b)=>b.score-a.score||b.sv-a.sv).slice(0,40);
-  $("st").textContent="Checking open interest...";
-  await pool(cand,async r=>{
-    if(r.fund===null)return;
-    const d=await j(`${BFD}/openInterestHist?symbol=${r.sym}&period=1h&limit=6`);
-    if(d&&d.length>1){const a=+d[0].sumOpenInterestValue,b=+d[d.length-1].sumOpenInterestValue;if(a){r.oi=(b-a)/a*100;if(r.oi>=5)r.score+=2;}}
-  },5);
-
-  $("st").textContent="Checking 15m pre-pump...";
-  await pool(cand,async r=>{
-    const k=await j(`${BN}/klines?symbol=${r.sym}&interval=15m&limit=35`);
-    if(!k||k.length<30)return;
-    const c=k.slice(0,-1).map(x=>({o:+x[1],h:+x[2],l:+x[3],c:+x[4],v:+x[5]}));
-    const last=c[c.length-1],avg=c.slice(-21,-1).reduce((a,x)=>a+x.v,0)/20;
-    if(!avg)return;
-    r.v15=last.v/avg;
-    const b=c[c.length-4];r.m3=(last.c-b.c)/b.c*100;
-    const n=c.length,tr=c.slice(-14).map((x,i)=>{const pc=c[n-14+i-1]?c[n-14+i-1].c:x.o;return Math.max(x.h-x.l,Math.abs(x.h-pc),Math.abs(x.l-pc));});
-    r.atr=tr.reduce((a,x)=>a+x,0)/tr.length;
-    r.price=last.c;
-    r.pre=r.v15>=vr&&r.m3<=mm&&r.m3>=-1;
-  },5);
-  renderPicks(cand);
-  rows=out.filter(r=>r.score>=3);
-  render();
-  $("st").textContent=`Done ${new Date().toLocaleTimeString()}. Scanned ${out.length} coins, ${rows.length} flagged.`;
-  $("pb").style.width="100%";busy=false;$("go").disabled=false;
+async function post(b){
+  const r=await fetch(API,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(b)});
+  if(r.status===429)throw new Error("429");
+  if(!r.ok)throw new Error("HTTP "+r.status);
+  return r.json();
 }
 
-const fp=p=>p>=100?p.toFixed(2):p>=1?p.toFixed(3):p>=0.01?p.toFixed(5):p.toPrecision(3);
-function renderPicks(c){
-  c=c.filter(r=>r.price).map(r=>({...r,ps:r.score+(r.pre?2:0)})).sort((a,b)=>b.ps-a.ps||b.sv-a.sv);
-  const pk=c.filter(r=>r.ps>=5).slice(0,5);
-  $("picks").innerHTML=pk.map(r=>{
-    const st=r.price-1.5*r.atr,tg=r.price+3*r.atr;
-    const why=[];
-    if(r.sv>=3)why.push("spot volume "+f(r.sv)+"x");
-    if(r.fv>=3)why.push("futures volume "+f(r.fv)+"x");
-    if(r.bv>=3)why.push("Bybit volume "+f(r.bv)+"x");
-    if(r.oi>=5)why.push("open interest +"+f(r.oi)+"%");
-    if(r.pre)why.push("15m pre-pump pattern");
-    return `<div class="pick"><b>${r.sym.replace("USDT","")}</b> <span class="s ${r.ps>=7?"hi":"mid"}">${r.ps}</span><br>
-Price ${fp(r.price)}<br>Stop ${fp(st)} (${f((st-r.price)/r.price*100)}%)<br>Target ${fp(tg)} (+${f((tg-r.price)/r.price*100)}%)<br>
-<span class="mu">${why.join(", ")||"mixed signals"}</span></div>`;
-  }).join("")||'<div class="chip">No strong candidates right now. Waiting is a valid choice.</div>';
-  const pre=c.filter(r=>r.pre);
-  $("pre").innerHTML=pre.map(r=>`<span class="chip"><a target="_blank" rel="noopener" href="https://www.tradingview.com/chart/?symbol=BINANCE:${r.sym}&interval=15">${r.sym.replace("USDT","")}</a> ${f(r.v15)}x vol, ${f(r.m3,2)}% move</span>`).join("")||'<span class="chip">None right now.</span>';
+async function loadMeta(){
+  try{
+    const [m,ctx]=await post({type:"metaAndAssetCtxs"});
+    m.universe.forEach((u,i)=>{
+      if(u.isDelisted||!ctx[i])return;
+      const c=ctx[i],o=coins.get(u.name)||{name:u.name,at:0};
+      o.price=+c.markPx;o.prev=+c.prevDayPx;o.dv=+c.dayNtlVlm;
+      o.oi=+c.openInterest*o.price;o.fund=+c.funding*100;
+      o.p24=o.prev?(o.price/o.prev-1)*100:null;
+      coins.set(u.name,o);
+    });
+  }catch(e){
+    if(String(e.message)==="429")hold=Date.now()+20000;
+    $("st").textContent="Market feed error ("+e.message+"). Retrying...";
+  }
 }
-const f=(v,d=1)=>v==null?"-":v.toFixed(d);
+
+// k = closed 15m candles, oldest first
+function calc(o,k){
+  const v=k.map(x=>+x.v),n=v.length;
+  const sum=(a,b)=>{let s=0;for(let i=a;i<b;i++)s+=v[i];return s};
+  const win=(kk,L)=>{
+    if(n<(L+1)*kk)return null;
+    const cur=sum(n-kk,n);let p=0;
+    for(let w=1;w<=L;w++)p+=sum(n-kk*(w+1),n-kk*w);
+    p/=L;
+    return p>0?(cur/p-1)*100:null;
+  };
+  const pc=kk=>{
+    if(n<kk)return null;
+    const a=+k[n-kk].o,b=+k[n-1].c;
+    return a?(b-a)/a*100:null;
+  };
+  o.v15=win(1,20);o.v1=win(4,24);o.v4=win(16,6);o.v24=win(96,1);
+  o.p15=pc(1);o.p1=pc(4);o.p4=pc(16);
+}
+
+// scheduler: 1 candle request per 1.5s (stays under the 1200/min weight limit)
+async function tick(){
+  if(busy||Date.now()<hold||!coins.size)return;
+  const now=Date.now();let best=null,bs=-1;
+  for(const o of coins.values()){
+    const age=now-o.at;
+    if(o.at&&age<25000)continue;
+    const w=(o.pre||o.score>=4)?4:1;
+    const sc=o.at?age*w:1e12+(o.dv||0);
+    if(sc>bs){bs=sc;best=o}
+  }
+  if(!best)return;
+  busy=true;
+  try{
+    const k=await post({type:"candleSnapshot",req:{coin:best.name,interval:"15m",startTime:now-49*3600e3,endTime:now}});
+    if(Array.isArray(k)&&k.length>1)calc(best,k.slice(0,-1));
+    best.at=Date.now();
+  }catch(e){
+    if(String(e.message)==="429")hold=Date.now()+20000;
+    else best.at=Date.now();
+  }
+  busy=false;
+}
+
+function sig(o,mv,mm){
+  const h=mv/2;let s=0;
+  if(o.v15!=null)s+=o.v15>=2*mv?2:o.v15>=mv?1:0;
+  if(o.v1!=null)s+=o.v1>=mv?2:o.v1>=h?1:0;
+  if(o.v4!=null&&o.v4>=h)s++;
+  if(o.v24!=null&&o.v24>=h)s++;
+  if(o.p15!=null&&o.p15>0)s++;
+  o.score=s;
+  o.pre=o.p1!=null&&(o.v15>=mv||o.v1>=mv)&&o.p1<=mm&&o.p1>=-1;
+}
+
+const fm=v=>v==null||isNaN(v)?"-":v>=1e9?(v/1e9).toFixed(2)+"B":v>=1e6?(v/1e6).toFixed(1)+"M":v>=1e3?(v/1e3).toFixed(0)+"K":v.toFixed(0);
+const fp=p=>p==null||isNaN(p)?"-":p>=100?p.toFixed(2):p>=1?p.toFixed(3):p>=0.01?p.toFixed(5):p.toPrecision(3);
+const pct=(v,mv)=>{
+  if(v==null)return '<span class="mu">...</span>';
+  const c=v>=mv?"h":v>=mv/2?"w":v<0?"n":"";
+  return `<span class="v ${c}">${v>=0?"+":""}${Math.round(v)}%</span>`;
+};
+
 function render(){
-  rows.sort((a,b)=>{
-    const x=a[sortK],y=b[sortK];
-    if(sortK==="sym")return sortD*(x<y?-1:1);
-    return sortD*((x??-1e9)-(y??-1e9));
+  const q=$("q").value.trim().toUpperCase(),mv=+$("mv").value||100,mm=+$("mm").value;
+  const all=[...coins.values()];
+  let loaded=0;
+  all.forEach(o=>{
+    sig(o,mv,mm);
+    if(o.at)loaded++;
+    if(o.pre&&!o.was&&alerts&&o.at&&Date.now()-(o.nt||0)>1800e3&&window.Notification&&Notification.permission==="granted"){
+      o.nt=Date.now();
+      new Notification(o.name+" pre-pump signal",{body:`Vol 15m ${Math.round(o.v15??0)}%, 1h ${Math.round(o.v1??0)}%, price 1h ${(o.p1??0).toFixed(2)}%`});
+    }
+    o.was=o.pre;
   });
-  $("tb").innerHTML=rows.slice(0,60).map(r=>{
-    const cls=r.score>=6?"hi":r.score>=4?"mid":"";
-    const base=r.sym.replace("USDT","");
-    return `<tr><td><a target="_blank" rel="noopener" href="https://www.tradingview.com/chart/?symbol=BINANCE:${r.sym}">${base}</a></td>
-<td><span class="s ${cls}">${r.score}</span></td><td>${f(r.sv)}x</td><td>${f(r.fv)}${r.fv!=null?"x":""}</td><td>${f(r.bv)}${r.bv!=null?"x":""}</td>
-<td class="${r.oi>=5?"g":""}">${f(r.oi)}</td><td>${f(r.fund,3)}</td><td class="${r.mv>=0?"g":"r"}">${f(r.mv,2)}</td></tr>`;
-  }).join("")||`<tr><td colspan="8" style="text-align:center;color:#8b93a5">Nothing unusual right now.</td></tr>`;
+  let arr=all.filter(o=>(!q||o.name.includes(q))&&(tab==="all"||(tab==="pre"&&o.pre)||(tab==="wl"&&wl.has(o.name))));
+  arr.sort((a,b)=>{
+    const x=a[sk],y=b[sk];
+    if(sk==="name")return sd*(x<y?-1:1);
+    const d=(x??-1e12)-(y??-1e12);
+    return d?sd*d:(b.dv-a.dv);
+  });
+  $("tb").innerHTML=arr.map(o=>{
+    const sc=o.score>=5?"h":o.score>=3?"m":"";
+    const st=wl.has(o.name);
+    return `<tr><td class="s ${st?"on":""}" data-s="${o.name}">&#9733;</td>
+<td><a target="_blank" rel="noopener" href="https://app.hyperliquid.xyz/trade/${o.name}">${o.name}</a>${o.pre?'<span class="tag">PRE-PUMP</span>':""}</td>
+<td>${fp(o.price)}</td><td class="${o.p24>=0?"g":"r"}">${o.p24==null?"-":o.p24.toFixed(2)+"%"}</td>
+<td>${pct(o.v15,mv)}</td><td>${pct(o.v1,mv)}</td><td>${pct(o.v4,mv)}</td><td>${pct(o.v24,mv)}</td>
+<td>$${fm(o.dv)}</td><td>$${fm(o.oi)}</td><td>${o.fund==null?"-":o.fund.toFixed(4)}</td>
+<td><span class="sc ${sc}">${o.at?o.score:"-"}</span></td></tr>`;
+  }).join("")||'<tr><td colspan="12" style="text-align:center;color:#7d8b99;padding:16px">Nothing here yet.</td></tr>';
+  const pre=all.filter(o=>o.pre).length;
+  $("pgb").style.width=(all.length?loaded/all.length*100:0)+"%";
+  $("st").textContent=`${all.length} markets | volume data ${loaded}/${all.length} | ${pre} pre-pump | next refresh ${left}s`;
 }
-document.querySelectorAll("th").forEach(th=>th.onclick=()=>{
-  const k=th.dataset.k;sortD=(k===sortK)?-sortD:-1;sortK=k;render();
+
+document.querySelectorAll("th[data-k]").forEach(th=>th.onclick=()=>{
+  const k=th.dataset.k;sd=k===sk?-sd:(k==="name"?1:-1);sk=k;render();
 });
-function setTimer(){
-  clearInterval(timer);const s=+$("ar").value;
-  if(s)timer=setInterval(scan,s*1000);
-}
-$("ar").onchange=setTimer;$("go").onclick=scan;
-setTimer();scan();
+document.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>{
+  tab=b.dataset.t;document.querySelectorAll(".tabs button").forEach(x=>x.classList.toggle("on",x===b));render();
+});
+$("tb").onclick=e=>{
+  const n=e.target.dataset&&e.target.dataset.s;if(!n)return;
+  wl.has(n)?wl.delete(n):wl.add(n);saveWl();render();
+};
+["q","mv","mm"].forEach(id=>$(id).oninput=render);
+$("rf").onclick=()=>{left=+$("ri").value;loadMeta().then(render)};
+$("nt").onclick=async()=>{
+  if(!window.Notification){alert("Notifications not supported in this browser.");return}
+  if(Notification.permission!=="granted")await Notification.requestPermission();
+  alerts=Notification.permission==="granted"&&!alerts;
+  $("nt").textContent=alerts?"Alerts on":"Alerts off";$("nt").classList.toggle("on",alerts);
+};
+
+(async()=>{
+  await loadMeta();left=+$("ri").value;render();
+  setInterval(tick,1500);
+  setInterval(()=>{
+    left--;
+    if(left<=0){left=+$("ri").value;loadMeta()}
+    render();
+  },1000);
+})();
 </script>
 </body>
 </html>
