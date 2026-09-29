@@ -26,6 +26,11 @@ a{color:var(--tx);text-decoration:none;font-weight:600}
 .g{color:var(--gr)}.r{color:var(--rd)}
 .s{display:inline-block;min-width:24px;text-align:center;border-radius:4px;padding:2px 6px;font-weight:700;background:#2a3140}
 .s.hi{background:var(--gr);color:#000}.s.mid{background:var(--ac);color:#000}
+.sec{font-size:15px;margin:14px 0 6px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:8px;margin-bottom:8px}
+.pick{background:var(--card);border-radius:8px;padding:10px;border-left:3px solid var(--gr);font-size:12px;line-height:1.6}
+.pick b{font-size:15px}.pick .mu{color:var(--mu)}
+.chip{background:var(--card);border-radius:6px;padding:6px 10px;font-size:12px;display:inline-block;margin:0 6px 6px 0}
 .note{color:var(--mu);font-size:11px;margin-top:10px;line-height:1.5}
 </style>
 </head>
@@ -44,6 +49,11 @@ a{color:var(--tx);text-decoration:none;font-weight:600}
 <div id="prog"><div id="pb"></div></div>
 <div id="st">Ready.</div>
 
+<h2 class="sec">Top picks to watch</h2>
+<div id="picks" class="grid"><div class="chip">Run a scan first.</div></div>
+<h2 class="sec">15m pre-pump watch (volume rising, price still flat)</h2>
+<div id="pre"><span class="chip">Run a scan first.</span></div>
+<h2 class="sec">All flagged coins</h2>
 <div class="wrap"><table>
 <thead><tr>
 <th data-k="sym">Coin</th><th data-k="score">Score</th><th data-k="sv">Spot vol x</th>
@@ -53,7 +63,7 @@ a{color:var(--tx);text-decoration:none;font-weight:600}
 <tbody id="tb"></tbody>
 </table></div>
 
-<div class="note">
+<div class="note">Picks show an example stop (1.5x ATR) and target (3x ATR) on 15m candles. These are risk-management examples, not advice or a guarantee.<br>
 Score: +2 spot volume spike with small price move, +2 futures volume spike, +1 Bybit volume spike, +2 open interest up 5%+ in 6h, +1 funding not overheated, +1 green candle. Score 6+ is the strongest signal.<br>
 This finds unusual activity. It cannot predict pumps, and accuracy is never 99%. Many signals fail. Always use a stop-loss. Not financial advice.
 </div>
@@ -115,19 +125,54 @@ async function scan(){
   },8,(d,t)=>{$("pb").style.width=(d/t*100)+"%";$("st").textContent=`Scanning ${d}/${t} coins...`;});
 
   // open interest only for top candidates (saves API limits)
-  const cand=out.filter(r=>r.fund!==null).sort((a,b)=>b.score-a.score).slice(0,40);
+  const cand=out.slice().sort((a,b)=>b.score-a.score||b.sv-a.sv).slice(0,40);
   $("st").textContent="Checking open interest...";
   await pool(cand,async r=>{
+    if(r.fund===null)return;
     const d=await j(`${BFD}/openInterestHist?symbol=${r.sym}&period=1h&limit=6`);
     if(d&&d.length>1){const a=+d[0].sumOpenInterestValue,b=+d[d.length-1].sumOpenInterestValue;if(a){r.oi=(b-a)/a*100;if(r.oi>=5)r.score+=2;}}
   },5);
 
+  $("st").textContent="Checking 15m pre-pump...";
+  await pool(cand,async r=>{
+    const k=await j(`${BN}/klines?symbol=${r.sym}&interval=15m&limit=35`);
+    if(!k||k.length<30)return;
+    const c=k.slice(0,-1).map(x=>({o:+x[1],h:+x[2],l:+x[3],c:+x[4],v:+x[5]}));
+    const last=c[c.length-1],avg=c.slice(-21,-1).reduce((a,x)=>a+x.v,0)/20;
+    if(!avg)return;
+    r.v15=last.v/avg;
+    const b=c[c.length-4];r.m3=(last.c-b.c)/b.c*100;
+    const n=c.length,tr=c.slice(-14).map((x,i)=>{const pc=c[n-14+i-1]?c[n-14+i-1].c:x.o;return Math.max(x.h-x.l,Math.abs(x.h-pc),Math.abs(x.l-pc));});
+    r.atr=tr.reduce((a,x)=>a+x,0)/tr.length;
+    r.price=last.c;
+    r.pre=r.v15>=vr&&r.m3<=mm&&r.m3>=-1;
+  },5);
+  renderPicks(cand);
   rows=out.filter(r=>r.score>=3);
   render();
   $("st").textContent=`Done ${new Date().toLocaleTimeString()}. Scanned ${out.length} coins, ${rows.length} flagged.`;
   $("pb").style.width="100%";busy=false;$("go").disabled=false;
 }
 
+const fp=p=>p>=100?p.toFixed(2):p>=1?p.toFixed(3):p>=0.01?p.toFixed(5):p.toPrecision(3);
+function renderPicks(c){
+  c=c.filter(r=>r.price).map(r=>({...r,ps:r.score+(r.pre?2:0)})).sort((a,b)=>b.ps-a.ps||b.sv-a.sv);
+  const pk=c.filter(r=>r.ps>=5).slice(0,5);
+  $("picks").innerHTML=pk.map(r=>{
+    const st=r.price-1.5*r.atr,tg=r.price+3*r.atr;
+    const why=[];
+    if(r.sv>=3)why.push("spot volume "+f(r.sv)+"x");
+    if(r.fv>=3)why.push("futures volume "+f(r.fv)+"x");
+    if(r.bv>=3)why.push("Bybit volume "+f(r.bv)+"x");
+    if(r.oi>=5)why.push("open interest +"+f(r.oi)+"%");
+    if(r.pre)why.push("15m pre-pump pattern");
+    return `<div class="pick"><b>${r.sym.replace("USDT","")}</b> <span class="s ${r.ps>=7?"hi":"mid"}">${r.ps}</span><br>
+Price ${fp(r.price)}<br>Stop ${fp(st)} (${f((st-r.price)/r.price*100)}%)<br>Target ${fp(tg)} (+${f((tg-r.price)/r.price*100)}%)<br>
+<span class="mu">${why.join(", ")||"mixed signals"}</span></div>`;
+  }).join("")||'<div class="chip">No strong candidates right now. Waiting is a valid choice.</div>';
+  const pre=c.filter(r=>r.pre);
+  $("pre").innerHTML=pre.map(r=>`<span class="chip"><a target="_blank" rel="noopener" href="https://www.tradingview.com/chart/?symbol=BINANCE:${r.sym}&interval=15">${r.sym.replace("USDT","")}</a> ${f(r.v15)}x vol, ${f(r.m3,2)}% move</span>`).join("")||'<span class="chip">None right now.</span>';
+}
 const f=(v,d=1)=>v==null?"-":v.toFixed(d);
 function render(){
   rows.sort((a,b)=>{
