@@ -42,7 +42,6 @@ a{color:var(--tx);text-decoration:none;font-weight:600}
 .sc.m{background:#fff1cc;color:#8a5a00}.sc.h{background:#e2f6ea;color:#0d7a44}
 .tag{background:#e2f6ea;color:#0d7a44;border-radius:4px;padding:1px 5px;font-size:10px;font-weight:700;margin-left:4px}
 .tag.rd{background:#fde8ea;color:#c0313e}
-.tag.vol{background:#e8f0fe;color:#1a56db}
 .d{font-size:11px;color:var(--mu);margin-top:2px}
 .sec{font-size:15px;margin:14px 0 6px;color:var(--tx)}
 .pg{display:none}.pg.on{display:block}
@@ -63,6 +62,9 @@ th.asc::after{content:" \25B2"}th.desc::after{content:" \25BC"}
 .sb i.f.m{background:var(--yl)}
 .sb i.f.h{background:var(--gr)}
 .pump-star{color:var(--yl);font-size:14px;margin-left:4px}
+.long-bar{display:inline-flex;width:60px;height:8px;border-radius:4px;overflow:hidden;vertical-align:middle}
+.long-bar .l{background:var(--gr)}
+.long-bar .s{background:var(--rd)}
 </style>
 </head>
 <body>
@@ -101,6 +103,8 @@ th.asc::after{content:" \25B2"}th.desc::after{content:" \25BC"}
 
 <div class="tabs" id="pages">
   <button data-p="radar" class="on">&#9889; Pre-Pump Radar</button>
+  <button data-p="lsr">&#9878;&#65039; Longs / Shorts</button>
+  <button data-p="liq">&#128165; Liquidation Risk</button>
   <button data-p="flow">&#128200; Order Flow</button>
   <button data-p="deriv">&#128202; Derivatives</button>
   <button data-p="vol">&#128260; Volume</button>
@@ -125,6 +129,29 @@ th.asc::after{content:" \25B2"}th.desc::after{content:" \25BC"}
 <tbody id="tbradar"></tbody></table></div>
 </div>
 
+<!-- LONGS / SHORTS -->
+<div class="pg" id="pg-lsr"><div class="cap" id="caplsr"></div>
+<div class="wrap"><table style="min-width:900px">
+<thead><tr>
+<th></th><th data-sk="base">Coin</th><th data-sk="price">Price</th><th data-sk="p24">24h %</th>
+<th data-sk="longPct">Long %</th><th data-sk="shortPct">Short %</th>
+<th data-sk="lsr">L/S Ratio</th><th>Distribution</th><th data-sk="oiPct">OI 1h %</th><th data-sk="dv">24h vol</th>
+</tr></thead>
+<tbody id="tblsr"></tbody></table></div>
+</div>
+
+<!-- LIQUIDATION RISK -->
+<div class="pg" id="pg-liq"><div class="cap" id="capliq"></div>
+<div class="wrap"><table style="min-width:1000px">
+<thead><tr>
+<th></th><th data-sk="base">Coin</th><th data-sk="price">Price</th><th data-sk="p24">24h %</th>
+<th data-sk="liqScore">Risk Score</th><th data-sk="liqDir">Risk Direction</th>
+<th data-sk="oi">OI</th><th data-sk="fund">Funding</th>
+<th data-sk="dHi">Off 24h hi</th><th data-sk="dv">24h vol</th>
+</tr></thead>
+<tbody id="tbliq"></tbody></table></div>
+</div>
+
 <!-- ORDER FLOW -->
 <div class="pg" id="pg-flow"><div class="cap" id="capflow"></div>
 <div class="wrap"><table style="min-width:1000px">
@@ -142,7 +169,7 @@ th.asc::after{content:" \25B2"}th.desc::after{content:" \25BC"}
 <thead><tr>
 <th></th><th data-sk="base">Coin</th><th data-sk="price">Price</th>
 <th data-sk="oi">Open Interest</th><th data-sk="oiPct">OI 1h %</th><th data-sk="oiZ">OI Z</th>
-<th data-sk="oiBy">OI by exchange</th><th data-sk="liq">Liq 24h</th>
+<th data-sk="oiBy">OI by exchange</th>
 </tr></thead>
 <tbody id="tbderiv"></tbody></table></div>
 </div>
@@ -186,14 +213,13 @@ let wl=new Set();
 try{wl=new Set(JSON.parse(localStorage.getItem("wl")||"[]"))}catch(e){}
 const saveWl=()=>{try{localStorage.setItem("wl",JSON.stringify([...wl]))}catch(e){}};
 
-// market cap cache
 const MCAP=new Map();let mcapAt=0;
 
 const FILTERS=["q","mv","mm","md","ty","mo","rm","dv15","ep","m24","m15","a10","a1h","aoi","ecw","rhi","rlo","ri","etf","mz","mhi","mtr"];
 try{const s=JSON.parse(localStorage.getItem("filters")||"{}");for(const k of FILTERS)if(s[k]!=null&&$(k))$(k).value=s[k]}catch(e){}
 function saveFilters(){const s={};for(const k of FILTERS)if($(k))s[k]=$(k).value;try{localStorage.setItem("filters",JSON.stringify(s))}catch(e){}}
 
-// ============ SIGNAL LOG ============
+// SIGNAL LOG
 const SIGLOG=[];
 try{const s=JSON.parse(localStorage.getItem("siglog")||"[]");if(Array.isArray(s))for(const x of s)SIGLOG.push(x)}catch(e){}
 function logSignals(all){
@@ -219,7 +245,6 @@ function logSignals(all){
   if(changed)try{localStorage.setItem("siglog",JSON.stringify(SIGLOG))}catch(e){}
 }
 
-// ============ HTTP ============
 async function get(url,opt){
   const r=await fetch(url,opt);
   if(r.status===429||r.status===418)throw new Error("429");
@@ -246,7 +271,6 @@ async function loadInfo(){
 }
 function up(b,tf){const k=b+(tf?"~":"");let o=coins.get(k);if(!o){o={base:b,key:k,tf:!!tf,ex:{},at:0};coins.set(k,o)}return o}
 
-// market cap from CoinGecko (top 250, refreshed every 5 min)
 async function loadMcap(){
   if(Date.now()-mcapAt<300000)return;
   try{
@@ -264,16 +288,16 @@ const loaders={
       if(u.isDelisted||!c[i])return;
       const [b,mu]=hlNorm(u.name),x=c[i],px=+x.markPx,o=up(b,u.name.includes(":")||BL.has(b));
       o.hlName=u.name;
-      o.ex.hl={price:px/mu,dv:+x.dayNtlVlm,p24:+x.prevDayPx?(px/+x.prevDayPx-1)*100:null,oi:+x.openInterest*px};n++;
+      o.ex.hl={price:px/mu,dv:+x.dayNtlVlm,p24:+x.prevDayPx?(px/+x.prevDayPx-1)*100:null,oi:+x.openInterest*px,fund8:+x.funding*800};n++;
     });return n;
   },
   async bn(){
     const [t,f]=await Promise.all([get(BF+"/ticker/24hr"),get(BF+"/premiumIndex")]);
-    let n=0;
+    const fr={};f.forEach(x=>fr[x.symbol]=+x.lastFundingRate*100);let n=0;
     t.forEach(x=>{
       if(!x.symbol.endsWith("USDT")||x.symbol.includes("_"))return;
       const [b,m]=norm(x.symbol),o=up(b,tfBn(x.symbol,b));o.bnSym=x.symbol;
-      o.ex.bn={price:+x.lastPrice/m,dv:+x.quoteVolume,p24:+x.priceChangePercent};n++;
+      o.ex.bn={price:+x.lastPrice/m,dv:+x.quoteVolume,p24:+x.priceChangePercent,fund8:fr[x.symbol]};n++;
     });return n;
   },
   async by(){
@@ -281,7 +305,7 @@ const loaders={
     d.result.list.forEach(x=>{
       if(!x.symbol.endsWith("USDT")||x.symbol.includes("-"))return;
       const [b,m]=norm(x.symbol),o=up(b,tfBy(x.symbol,b));o.bySym=x.symbol;
-      o.ex.by={price:+x.lastPrice/m,dv:+x.turnover24h,p24:+x.price24hPcnt*100,oi:+x.openInterestValue};n++;
+      o.ex.by={price:+x.lastPrice/m,dv:+x.turnover24h,p24:+x.price24hPcnt*100,oi:+x.openInterestValue,fund8:+x.fundingRate*100};n++;
     });return n;
   },
   async ok(){
@@ -290,7 +314,7 @@ const loaders={
     t.data.forEach(x=>{
       if(!x.instId.endsWith("-USDT-SWAP"))return;
       const [b,m]=norm(x.instId.split("-")[0]+"USDT"),o=up(b,tfOk(x.instId,b)),last=+x.last;
-      o.ex.ok={price:last/m,dv:+x.volCcy24h*last,p24:+x.open24h?(last/+x.open24h-1)*100:null,oi:om[x.instId]};n++;
+      o.ex.ok={price:last/m,dv:+x.volCcy24h*last,p24:+x.open24h?(last/+x.open24h-1)*100:null,oi:om[x.instId],fund8:null};n++;
     });return n;
   }
 };
@@ -316,6 +340,7 @@ function agg(o){
   o.n=e.length;
   o.dv=e.reduce((a,x)=>a+(x.dv||0),0);
   const oi=e.filter(x=>x.oi!=null);o.oi=oi.length?oi.reduce((a,x)=>a+x.oi,0):null;
+  const f=e.filter(x=>x.fund8!=null&&!isNaN(x.fund8));o.fund=f.length?f.reduce((a,x)=>a+x.fund8,0)/f.length:null;
   const pick=k=>{for(const s of ["bn","by","hl","ok"])if(o.ex[s]&&o.ex[s][k]!=null)return o.ex[s][k];return null};
   o.price=pick("price");o.p24=pick("p24");
   o.src=o.bnSym?"bn":o.bySym?"by":o.hlName?"hl":null;
@@ -324,7 +349,6 @@ function agg(o){
   o.mcap=MCAP.get(o.base)||null;
 }
 
-// ============ CANDLE CALC ============
 function calc(o,k){
   const v=k.map(x=>x.q),n=v.length;
   const sum=(a,b)=>{let s=0;for(let i=a;i<b;i++)s+=v[i];return s};
@@ -338,14 +362,8 @@ function calc(o,k){
   const a=win(1,20),b=win(4,24),c=win(16,6),d=win(96,1);
   o.v15=a&&a[0];o.d15=a&&a[1];o.v1=b&&b[0];o.d1=b&&b[1];o.v4=c&&c[0];o.d4=c&&c[1];o.v24=d&&d[0];o.d24=d&&d[1];
   if(!a)o.v15=null;if(!b)o.v1=null;if(!c)o.v4=null;if(!d)o.v24=null;
-  // raw dollar volume for 15m / 4h / 24h (last closed candle, last 16, last 96)
-  o.dv15=a&&a[1]!=null?a[1]+ (null):null;
-  o.dv4=c&&c[1]!=null?c[1]:null;
-  o.dv24=d&&d[1]!=null?d[1]:null;
-  // absolute volume ($) sums over windows
-  o.qv15=n>=1?sum(n-1,n):null;
-  o.qv4 =n>=16?sum(n-16,n):null;
-  o.qv24=n>=96?sum(n-96,n):null;
+  o.dv15=a&&a[1]!=null?a[1]:null;o.dv4=c&&c[1]!=null?c[1]:null;o.dv24=d&&d[1]!=null?d[1]:null;
+  o.qv15=n>=1?sum(n-1,n):null;o.qv4=n>=16?sum(n-16,n):null;o.qv24=n>=96?sum(n-96,n):null;
   o.p15=pc(1);o.p1=pc(4);o.p4=pc(16);
   let st=0;for(let i=n-1;i>=1&&st<8;i--){if(v[i]>v[i-1])st++;else break}
   o.vs=st;o.lq=v[n-1];
@@ -365,7 +383,7 @@ function calc(o,k){
   }
 }
 
-// ============ OI ============
+// OI HISTORY
 const ofn={
   bn:async o=>(await get(`${BFD}/openInterestHist?symbol=${o.bnSym}&period=15m&limit=5`)).map(x=>+x.sumOpenInterestValue),
   by:async o=>(await get(`${BYA}/open-interest?category=linear&symbol=${o.bySym}&intervalTime=15min&limit=5`)).result.list.slice().reverse().map(x=>+x.openInterest)
@@ -399,7 +417,7 @@ async function tickOi(){
   busy.oi=false;
 }
 
-// ============ ORDER FLOW ============
+// ORDER FLOW + LONG/SHORT
 const flowFns={
   bn:{
     taker:async o=>(await get(`${BFD}/takerlongshortRatio?symbol=${o.bnSym}&period=1h&limit=6`)).map(x=>({buy:+x.buyVol,sell:+x.sellVol,ratio:+x.buySellRatio})),
@@ -413,7 +431,11 @@ function calcFlow(o,tk,ls){
     o.cvd=(buy-sell)/(buy+sell)*100;
     o.taker=buy/(buy+sell)*100;
   }
-  if(ls){o.lsr=+ls.longShortRatio;}
+  if(ls){
+    o.lsr=+ls.longShortRatio;
+    o.longPct=+ls.longAccount*100;
+    o.shortPct=+ls.shortAccount*100;
+  }
 }
 async function tickFlow(src){
   const k="f"+src;
@@ -441,7 +463,7 @@ async function tickFlow(src){
   busy[k]=false;
 }
 
-// ============ 1-MIN VOLUME ============
+// 1-MIN VOLUME
 const m1f={
   bn:async o=>(await get(`${BF}/klines?symbol=${o.bnSym}&interval=1m&limit=60`)).map(x=>({q:+x[7]})),
   by:async o=>(await get(`${BYA}/kline?category=linear&symbol=${o.bySym}&interval=1&limit=60`)).result.list.slice().reverse().map(x=>({q:+x[6]}))
@@ -469,7 +491,7 @@ async function tick1(src){
   busy[k1]=false;
 }
 
-// ============ EMA / RSI ============
+// EMA / RSI
 const TFM={"1h":["1h","60"],"4h":["4h","240"],"1d":["1d","D"]};
 const ef={
   bn:async o=>(await get(`${BF}/klines?symbol=${o.bnSym}&interval=${TFM[$("etf").value][0]}&limit=499`)).map(x=>+x[4]),
@@ -510,7 +532,7 @@ async function tickE(src){
   busy[k]=false;
 }
 
-// ============ 15m CANDLES ============
+// 15m CANDLES
 const cf={
   bn:async o=>(await get(`${BF}/klines?symbol=${o.bnSym}&interval=15m&limit=195`)).map(x=>({o:+x[1],h:+x[2],l:+x[3],c:+x[4],q:+x[7]})),
   by:async o=>(await get(`${BYA}/kline?category=linear&symbol=${o.bySym}&interval=15&limit=195`)).result.list.slice().reverse().map(x=>({o:+x[1],h:+x[2],l:+x[3],c:+x[4],q:+x[6]})),
@@ -539,8 +561,8 @@ async function tick(src){
   busy[src]=false;
 }
 
-// ============ SORTING ============
-const SRT={tbv:["q1h",-1],tbradar:["score",-1],tbflow:["cvd",-1],tbderiv:["oiPct",-1],tbe:["ago",1],tbr:["rsi",-1]};
+// SORTING
+const SRT={tbv:["q1h",-1],tbradar:["score",-1],tbflow:["cvd",-1],tbderiv:["oiPct",-1],tblsr:["lsr",-1],tbliq:["liqScore",-1],tbe:["ago",1],tbr:["rsi",-1]};
 const val=(o,k)=>k==="ago"?(o.cr?o.cr.ago:null):k==="ctype"?(o.cr?o.cr.type:null):o[k];
 function sortBy(arr,id){
   const [k,d]=SRT[id];
@@ -553,7 +575,7 @@ function sortBy(arr,id){
   });
 }
 
-// ============ SCORE (no funding) ============
+// SCORE
 function score(o,mv){
   let s=0;
   if(o.v15!=null)s+=o.v15>=2*mv?2:o.v15>=mv?1:0;
@@ -574,11 +596,40 @@ function score(o,mv){
   o.pre=false;
 }
 
-// volume "continues pumping" — 3+ rising candles OR short+mid both expanding
 function pumpStar(o,mv){
   if(o.vs!=null&&o.vs>=3)return true;
   if(o.v15!=null&&o.v4!=null&&o.v15>=mv&&o.v4>=mv/2)return true;
   return false;
+}
+
+// LIQUIDATION RISK PROXY
+// Real liquidations are WebSocket-only. This estimates risk from OI + funding + price position.
+function liqRisk(o){
+  if(o.oi==null||o.price==null)return {score:0,dir:null};
+  let longRisk=0, shortRisk=0;
+  // Big OI = lots of positions that can get liquidated
+  const oiBig=o.oi>1e8?2:o.oi>2e7?1:0;
+  // Funding: positive = longs pay (crowded long), negative = shorts pay (crowded short)
+  if(o.fund!=null){
+    if(o.fund>0.05){longRisk+=2;shortRisk+=0}
+    else if(o.fund>0.02){longRisk+=1;shortRisk+=0}
+    else if(o.fund<-0.03){shortRisk+=2;longRisk+=0}
+    else if(o.fund<-0.01){shortRisk+=1;longRisk+=0}
+  }
+  // Price near 24h high = long liquidation zone above is thin
+  if(o.dHi!=null){
+    if(o.dHi>-2){longRisk+=2}
+    else if(o.dHi>-5){longRisk+=1}
+    // Price far below high = short liq zone (if shorts are underwater)
+    else if(o.dHi<-15){shortRisk+=1}
+  }
+  // Volatility increases liq risk
+  if(o.tight!=null&&o.tight>10){longRisk++;shortRisk++}
+  const total=longRisk+shortRisk+oiBig;
+  let dir=null;
+  if(longRisk>shortRisk)dir="longs at risk";
+  else if(shortRisk>longRisk)dir="shorts at risk";
+  return {score:total,dir};
 }
 
 function computePre(o){
@@ -594,11 +645,11 @@ function computePre(o){
   if(o.dHi!=null&&(o.dHi>mhiv||o.dHi<-30))return;
   if(o.tight!=null&&o.tight>mtrv)return;
   if(o.oiPct!=null&&(o.oiPct<mo))return;
-  if(o.oiZ!=null&&o.oiZ<mzv)return;
+  if(o.oiZ!=null&&(o.oiZ<mzv))return;
   o.pre=true;
 }
 
-// ============ FORMATTERS ============
+// FORMATTERS
 const fm=v=>v==null||isNaN(v)?"-":v>=1e12?(v/1e12).toFixed(2)+"T":v>=1e9?(v/1e9).toFixed(2)+"B":v>=1e6?(v/1e6).toFixed(1)+"M":v>=1e3?(v/1e3).toFixed(0)+"K":v.toFixed(0);
 const fp=p=>p==null||isNaN(p)?"-":p>=100?p.toFixed(2):p>=1?p.toFixed(3):p>=0.01?p.toFixed(5):p.toPrecision(3);
 const dl=d=>d==null?"":(d>=0?"+":"-")+"$"+fm(Math.abs(d));
@@ -621,7 +672,6 @@ function scoreBar(s){
   return `<span class="sb">${h}</span> <b>${s}</b>`;
 }
 
-// ============ RENDER ============
 function render(){
   lastR=Date.now();
   const vis=page==="wl"?"mkt":page;
@@ -632,6 +682,7 @@ function render(){
   all.forEach(o=>{
     agg(o);score(o,mv);computePre(o);
     o.pumping=pumpStar(o,mv);
+    const lr=liqRisk(o);o.liqScore=lr.score;o.liqDir=lr.dir;
     if(o.pre&&!o.was&&alerts&&o.at&&Date.now()-(o.nt||0)>1800e3&&window.Notification&&Notification.permission==="granted"){
       o.nt=Date.now();
       try{new Notification(o.base+" PRE-PUMP",{body:`Score ${o.score} | OI ${(o.oiPct??0).toFixed(1)}% | CVD ${(o.cvd??0).toFixed(1)} | Vol15 ${Math.round(o.v15??0)}%`})}catch(e){}
@@ -649,6 +700,7 @@ function render(){
       if(o.cvd>2)flags.push('<span class="bd bd-cvd">CVD+</span>');
       if(o.lsr!=null&&o.lsr>2)flags.push('<span class="bd bd-lsr">LSR '+o.lsr.toFixed(1)+'</span>');
       if(o.tight!=null&&o.tight<4)flags.push('<span class="bd bd-oi">TIGHT</span>');
+      if(o.liqScore>=4)flags.push('<span class="bd bd-liq">LIQ\u26A0</span>');
       const star=o.pumping?'<span class="pump-star" title="Volume continues pumping">&#9733;</span>':'';
       return `<tr><td class="s ${wl.has(o.key)?"on":""}" data-s="${o.key}">&#9733;</td>
 <td><a href="#" data-c="${o.key}">${o.base}</a>${star}${o.tf?'<span class="tag" style="background:#7d8b99">STOCK</span>':""}</td>
@@ -675,6 +727,50 @@ function render(){
     const w4=done4.filter(s=>s.r4>0).length;
     const avg4=done4.length?done4.reduce((a,s)=>a+s.r4,0)/done4.length:0;
     $("logstat").innerHTML=`Signal log: <b>${SIGLOG.length}</b> logged &middot; 1h: <b>${done.length}</b> resolved (win ${done.length?(w1/done.length*100).toFixed(0):"-"}%, avg ${avg1.toFixed(2)}%) &middot; 4h: <b>${done4.length}</b> resolved (win ${done4.length?(w4/done4.length*100).toFixed(0):"-"}%, avg ${avg4.toFixed(2)}%)`;
+  }
+
+  // LONGS / SHORTS
+  if(vis==="lsr"){
+    const ls=all.filter(o=>o.dv>=md&&o.longPct!=null).sort((a,b)=>b.lsr-a.lsr).slice(0,100);
+    $("tblsr").innerHTML=ls.map(o=>{
+      const star=o.pumping?'<span class="pump-star">&#9733;</span>':'';
+      const longC=o.longPct>70?'r':o.longPct<40?'g':'';
+      const shortC=o.shortPct>60?'g':o.shortPct<30?'r':'';
+      const lw=Math.round(o.longPct);
+      const bar=`<span class="long-bar"><span class="l" style="width:${lw}%"></span><span class="s" style="width:${100-lw}%"></span></span>`;
+      return `<tr><td class="s ${wl.has(o.key)?"on":""}" data-s="${o.key}">&#9733;</td>
+<td><a href="#" data-c="${o.key}">${o.base}</a>${star}</td>
+<td>${fp(o.price)}</td>
+<td class="${o.p24>=0?"g":"r"}">${o.p24==null?"-":o.p24.toFixed(2)+"%"}</td>
+<td class="${longC}">${o.longPct.toFixed(1)}%</td>
+<td class="${shortC}">${o.shortPct.toFixed(1)}%</td>
+<td><b>${o.lsr.toFixed(2)}</b></td>
+<td>${bar}</td>
+<td class="${o.oiPct>=1?"g":"mu"}">${o.oiPct==null?"...":(o.oiPct>=0?"+":"")+o.oiPct.toFixed(1)+"%"}${o.os!=null?" ("+o.os+"\u2191)":""}</td>
+<td>$${fm(o.dv)}</td></tr>`;
+    }).join("")||'<tr><td colspan="10" style="text-align:center;color:#7a8392;padding:16px">Long/short data fills in over a few minutes (Binance accounts only).</td></tr>';
+    $("caplsr").textContent=`Long vs short account ratio (Binance). L/S > 2.0 = crowded longs (contrarian risk). L/S < 0.5 = crowded shorts (squeeze fuel).`;
+  }
+
+  // LIQUIDATION RISK
+  if(vis==="liq"){
+    const lq=all.filter(o=>o.dv>=md&&o.liqScore!=null).sort((a,b)=>b.liqScore-a.liqScore||b.dv-a.dv).slice(0,100);
+    $("tbliq").innerHTML=lq.map(o=>{
+      const star=o.pumping?'<span class="pump-star">&#9733;</span>':'';
+      const scC=o.liqScore>=5?'r':o.liqScore>=3?'yl':'mu';
+      const dirC=o.liqDir==="shorts at risk"?'g':o.liqDir==="longs at risk"?'r':'mu';
+      return `<tr><td class="s ${wl.has(o.key)?"on":""}" data-s="${o.key}">&#9733;</td>
+<td><a href="#" data-c="${o.key}">${o.base}</a>${star}</td>
+<td>${fp(o.price)}</td>
+<td class="${o.p24>=0?"g":"r"}">${o.p24==null?"-":o.p24.toFixed(2)+"%"}</td>
+<td class="${scC}"><b>${o.liqScore}</b></td>
+<td class="${dirC}">${o.liqDir||"-"}</td>
+<td>$${fm(o.oi)}</td>
+<td class="${o.fund<-0.02?"g":o.fund>0.05?"r":"mu"}">${o.fund==null?"-":o.fund.toFixed(4)+"%"}${o.fund>0.05?" (longs pay)":o.fund<-0.02?" (shorts pay)":""}</td>
+<td>${dHiCell(o)}</td>
+<td>$${fm(o.dv)}</td></tr>`;
+    }).join("")||'<tr><td colspan="10" style="text-align:center;color:#7a8392;padding:16px">Liquidation risk estimates build over a few minutes.</td></tr>';
+    $("capliq").textContent=`Liquidation risk is ESTIMATED from OI size + funding extremes + price position vs 24h high. Real liquidation amounts require WebSocket streams (not available in a static HTML file).`;
   }
 
   // FLOW
@@ -707,9 +803,8 @@ function render(){
 <td>$${fm(o.oi)}</td>
 <td class="${o.oiPct>=1?"g":o.oiPct<-1?"r":"mu"}">${o.oiPct==null?"...":(o.oiPct>=0?"+":"")+o.oiPct.toFixed(2)+"%"}${o.os!=null?" ("+o.os+"\u2191)":""}</td>
 <td class="${o.oiZ>=2?"g":o.oiZ>=1?"yl":"mu"}">${o.oiZ==null?"...":o.oiZ.toFixed(1)}</td>
-<td class="ex">${oiEx||"-"}</td>
-<td>${o.liq?"$"+fm(o.liq):"-"}</td></tr>`;
-    }).join("")||'<tr><td colspan="8" style="text-align:center;color:#7a8392;padding:16px">Derivatives data loads over a few minutes.</td></tr>';
+<td class="ex">${oiEx||"-"}</td></tr>`;
+    }).join("")||'<tr><td colspan="7" style="text-align:center;color:#7a8392;padding:16px">Derivatives data loads over a few minutes.</td></tr>';
     $("capderiv").textContent=`OI Z-score: standard deviations of the latest OI move vs recent history. >2 = abnormal.`;
   }
 
@@ -774,7 +869,6 @@ function render(){
   for(const id in SRT){const t=$(id);if(!t)continue;const tbl=t.closest("table");if(!tbl)continue;tbl.querySelectorAll("th[data-sk]").forEach(h=>{const on=h.dataset.sk===SRT[id][0];h.classList.toggle("asc",on&&SRT[id][1]>0);h.classList.toggle("desc",on&&SRT[id][1]<0)})}
 }
 
-// ============ EVENTS ============
 document.querySelectorAll("th[data-k]").forEach(th=>th.onclick=()=>{
   const k=th.dataset.k;sd=k===sk?-sd:(k==="base"?1:-1);sk=k;render();
 });
@@ -821,7 +915,6 @@ async function tickBtc(){
   }catch(e){}
 }
 
-// ============ BOOT ============
 (async()=>{
   renderSrc();
   await loadAll();
