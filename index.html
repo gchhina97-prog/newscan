@@ -53,6 +53,9 @@ a{color:var(--tx);text-decoration:none;font-weight:700}
 .cap{color:var(--mu);font-size:12px;margin:6px 0}
 details.fl{margin-bottom:8px}details.fl summary{cursor:pointer;color:var(--ac);padding:4px 0;font-weight:600}
 .seg{display:flex;gap:6px;margin:6px 0;flex-wrap:wrap}
+th.asc::after{content:" \25B2"}th.desc::after{content:" \25BC"}
+.cl{display:flex;align-items:center;gap:4px;font-size:11px;color:var(--mu)}
+.cl input{width:26px;height:22px;padding:0;border:0;background:none;cursor:pointer}
 .ex{color:var(--mu);font-size:11px;letter-spacing:1px}
 .note{color:var(--mu);font-size:11px;line-height:1.5;margin-top:10px}
 /* ---- light theme (Velo-style) ---- */
@@ -90,10 +93,11 @@ body{padding-top:6px}
 
 
 <div class="chart">
-  <div class="ch"><b id="ct">BTCUSDT</b><span class="sp"></span><span id="ivs"></span></div>
+  <div class="ch"><b id="ct">BTC</b><span id="ivs"></span><span class="sp"></span>
+    <label class="cl">EMA 50<input type="color" id="k_c50"></label><label class="cl">EMA 200<input type="color" id="k_c200"></label><label class="cl">Up<input type="color" id="k_up"></label><label class="cl">Down<input type="color" id="k_dn"></label><button id="thm">Dark chart</button></div>
   <div id="tv"></div>
 </div>
-<script src="https://s3.tradingview.com/tv.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lightweight-charts@4.2.0/dist/lightweight-charts.standalone.production.js"></script>
 <div class="tabs" id="pages"><button data-p="vol" class="on">Volume</button><button data-p="pre">Pre-pump</button><button data-p="ema">EMA 50/200</button><button data-p="rsi">RSI</button><button data-p="rise">Rising</button><button data-p="mkt">Markets</button><button data-p="wl">&#9733; Watchlist</button></div>
 <details class="fl"><summary>Filters</summary><div class="bar">
   <label>Search<input id="q" placeholder="BTC"></label>
@@ -120,17 +124,17 @@ body{padding-top:6px}
 
 </details>
 <div class="pg on" id="pg-vol"><div class="cap" id="capv"></div><div class="wrap"><table style="min-width:900px">
-<thead><tr><th></th><th>Coin</th><th>Exch</th><th>Price</th><th>24h %</th><th>1h price</th><th>10m volume</th><th>1h volume</th><th>1h OI chg</th><th>Open interest</th><th>Funding %/8h</th></tr></thead>
+<thead><tr><th></th><th data-sk="base">Coin</th><th data-sk="n">Exch</th><th data-sk="price">Price</th><th data-sk="p24">24h %</th><th data-sk="p1">1h price</th><th data-sk="q10">10m volume</th><th data-sk="q1h">1h volume</th><th data-sk="oiPct">1h OI chg</th><th data-sk="oi">Open interest</th><th data-sk="fund">Funding %/8h</th></tr></thead>
 <tbody id="tbv"></tbody></table></div></div>
 <div class="pg" id="pg-pre"><div class="cap" id="capp"></div><div class="wrap"><table style="min-width:900px">
-<thead><tr><th></th><th>Coin</th><th>Exch</th><th>Price</th><th>24h %</th><th>1h price</th><th>10m volume</th><th>1h volume</th><th>1h OI chg</th><th>Open interest</th><th>Funding %/8h</th></tr></thead>
+<thead><tr><th></th><th data-sk="base">Coin</th><th data-sk="n">Exch</th><th data-sk="price">Price</th><th data-sk="p24">24h %</th><th data-sk="p1">1h price</th><th data-sk="q10">10m volume</th><th data-sk="q1h">1h volume</th><th data-sk="oiPct">1h OI chg</th><th data-sk="oi">Open interest</th><th data-sk="fund">Funding %/8h</th></tr></thead>
 <tbody id="tbp"></tbody></table></div></div>
 <div class="pg" id="pg-ema"><div class="cap" id="cape"></div>
 <div class="seg" id="segE"><button data-m="both" class="on">All crosses</button><button data-m="bull">Bullish (50 over 200)</button><button data-m="bear">Bearish (50 under 200)</button></div>
-<div class="wrap"><table style="min-width:900px"><thead><tr><th></th><th>Coin</th><th>Exch</th><th>Price</th><th>24h %</th><th>Cross</th><th>When</th><th>EMA 50</th><th>EMA 200</th><th>Gap %</th><th>RSI</th><th>24h volume</th></tr></thead><tbody id="tbe"></tbody></table></div></div>
+<div class="wrap"><table style="min-width:900px"><thead><tr><th></th><th data-sk="base">Coin</th><th data-sk="n">Exch</th><th data-sk="price">Price</th><th data-sk="p24">24h %</th><th data-sk="ctype">Cross</th><th data-sk="ago">When</th><th data-sk="e50">EMA 50</th><th data-sk="e200">EMA 200</th><th data-sk="gap">Gap %</th><th data-sk="rsi">RSI</th><th data-sk="dv">24h volume</th></tr></thead><tbody id="tbe"></tbody></table></div></div>
 <div class="pg" id="pg-rsi"><div class="cap" id="capr"></div>
 <div class="seg" id="segR"><button data-m="all" class="on">All</button><button data-m="ob">Overbought</button><button data-m="os">Oversold</button></div>
-<div class="wrap"><table style="min-width:800px"><thead><tr><th></th><th>Coin</th><th>Exch</th><th>Price</th><th>24h %</th><th>RSI (14)</th><th>Previous RSI</th><th>EMA trend</th><th>24h volume</th></tr></thead><tbody id="tbr"></tbody></table></div></div>
+<div class="wrap"><table style="min-width:800px"><thead><tr><th></th><th data-sk="base">Coin</th><th data-sk="n">Exch</th><th data-sk="price">Price</th><th data-sk="p24">24h %</th><th data-sk="rsi">RSI (14)</th><th data-sk="rsip">Previous RSI</th><th data-sk="etr">EMA trend</th><th data-sk="dv">24h volume</th></tr></thead><tbody id="tbr"></tbody></table></div></div>
 <div class="pg" id="pg-rise"><h2 class="sec">Volume or Open Interest rising (keeps increasing)</h2>
 <div class="wrap"><table style="min-width:900px">
 <thead><tr><th>Coin</th><th>Exch</th><th>Price</th><th>24h %</th><th>Price move 15m / 1h / 4h</th><th>15m volume increase</th><th>Last 15m vol</th><th>Vol 1h</th><th>OI change (1h)</th><th>OI total</th><th>Funding %/8h</th><th>Signal</th></tr></thead>
@@ -156,7 +160,7 @@ body{padding-top:6px}
   <button id="nt">Alerts off</button>
 </div>
 <div class="src" id="src"></div></div>
-<div class="note">EMA 50/200 page: coins where EMA 50 crossed above EMA 200 (bullish) or below it (bearish) within the last few closed candles (4h by default, change under Filters). RSI page: RSI(14) on the same timeframe, with overbought/oversold buttons. Both pages use Binance/Bybit coins and need a few minutes to load candle history.<br>Pages: Volume = [10m Volume] and [1h Volume] above your minimums (default $1M and $5M, rolling dollar volume like Velo). Pre-pump = the same plus [1h OI Chg] above your minimum (default 0.1%) and, by default, price not pumped yet. Rising and Markets are the earlier screens. Volume and Pre-pump use Binance/Bybit coins. Tap a coin to load its chart on top.<br>
+<div class="note">Click any column header on the Volume, Pre-pump, EMA 50/200 and RSI pages (and Markets) to sort ascending or descending. The chart shows EMA 50 and EMA 200 automatically; change their colors, the candle colors, or switch the chart between light and dark with the controls above it.<br>EMA 50/200 page: coins where EMA 50 crossed above EMA 200 (bullish) or below it (bearish) within the last few closed candles (4h by default, change under Filters). RSI page: RSI(14) on the same timeframe, with overbought/oversold buttons. Both pages use Binance/Bybit coins and need a few minutes to load candle history.<br>Pages: Volume = [10m Volume] and [1h Volume] above your minimums (default $1M and $5M, rolling dollar volume like Velo). Pre-pump = the same plus [1h OI Chg] above your minimum (default 0.1%) and, by default, price not pumped yet. Rising and Markets are the earlier screens. Volume and Pre-pump use Binance/Bybit coins. Tap a coin to load its chart on top.<br>
 Before-pump filter (default on): the top section hides coins that already moved, so price must be within your max 15m move (default 1.5%), your max 1h move, 2x that over 4h, under your max 24h move, and funding not crowded (above 0.05%/8h). Top section: shows coins where the latest 15m volume is above normal by at least your minimum dollar amount (default $5M) OR open interest is up 3 checks in a row (15m steps, last hour, above your minimum rise). Coins with both are listed first and tagged BOTH. The dropdown lets you pick: Volume only (volume rising, ignore OI), OI only (OI rising, ignore volume), Volume OR OI, or Volume AND OI. OI history comes from Binance/Bybit coins only. Stocks, ETFs and commodity perps are hidden by default (Crypto only). Combined data: 24h volume is the sum across exchanges, open interest is the sum of Hyperliquid + Bybit + OKX, funding is the average (approx. per 8h). Exch letters: H Hyperliquid, B Binance, Y Bybit, O OKX.<br>
 Under each % is the extra dollar volume: latest window volume minus the normal (average) volume, e.g. +$5.2M. Vol % = latest closed window vs the average of earlier windows of the same size (15m vs previous 20 candles, 1h vs previous 24h, 4h vs previous 6 windows, 24h vs the 24h before). +200% means 3x normal. Candles come from Binance first, then Bybit, then Hyperliquid, so the columns fill in over a minute or two (Hyperliquid-only coins are slower).<br>
 Pre-pump = big volume spike while the 1h price move is still small. Signal (0 to 7) adds up spikes across timeframes. It finds unusual activity and cannot predict pumps. Use a stop-loss. Not financial advice.
@@ -401,6 +405,18 @@ async function tick(src){
   busy[src]=false;
 }
 
+const SRT={tbv:["q1h",-1],tbp:["q1h",-1],tbe:["ago",1],tbr:["rsi",-1]};
+const val=(o,k)=>k==="ago"?(o.cr?o.cr.ago:null):k==="ctype"?(o.cr?o.cr.type:null):o[k];
+function sortBy(arr,id){
+  const [k,d]=SRT[id];
+  return arr.slice().sort((a,b)=>{
+    const x=val(a,k),y=val(b,k);
+    if(x==null&&y==null)return b.dv-a.dv;
+    if(x==null)return 1;if(y==null)return -1;
+    if(typeof x==="string"||typeof y==="string")return d*String(x).localeCompare(String(y));
+    return x===y?b.dv-a.dv:d*(x-y);
+  });
+}
 function sig(o,mv,mm){
   const h=mv/2;let s=0;
   if(o.v15!=null)s+=o.v15>=2*mv?2:o.v15>=mv?1:0;
@@ -483,7 +499,7 @@ function render(){
 <td class="${o.p1>=0?"g":"r"}">${o.p1==null?"...":sg(o.p1)}</td><td class="g">$${fm(o.q10)}</td><td class="g">$${fm(o.q1h)}</td>
 <td class="${o.oiPct>=aoi?"g":"mu"}">${o.oiPct==null||!fresh(o)?"...":sg(o.oiPct)}</td><td>$${fm(o.oi)}</td><td>${o.fund==null?"-":o.fund.toFixed(4)}</td></tr>`;
   const none='<tr><td colspan="11" style="text-align:center;color:#7d8b99;padding:14px">None right now. Data fills in over a minute or two.</td></tr>';
-  const vl=all.filter(f1).sort((a,b)=>b.q1h-a.q1h).slice(0,60),pl=all.filter(f2).sort((a,b)=>b.q1h-a.q1h).slice(0,60);
+  const vl=sortBy(all.filter(f1),"tbv").slice(0,200),pl=sortBy(all.filter(f2),"tbp").slice(0,200);
   $("tbv").innerHTML=vl.map(vr).join("")||none;
   $("tbp").innerHTML=pl.map(vr).join("")||none;
   $("capv").textContent=`[10m Volume] >= $${fm(a10)} AND [1h Volume] >= $${fm(a1h)}   (${vl.length} coins)`;
@@ -491,12 +507,15 @@ function render(){
   const tfl=$("etf").value.toUpperCase(),cw=+$("ecw").value||6,rhi=+$("rhi").value||70,rlo=+$("rlo").value||30;
   const bc=o=>`<td class="s ${wl.has(o.key)?"on":""}" data-s="${o.key}">&#9733;</td><td><a href="#" data-c="${o.key}">${o.base}</a></td><td class="ex">${Object.keys(o.ex).map(k=>LET[k]).join(" ")}</td><td>${fp(o.price)}</td><td class="${o.p24>=0?"g":"r"}">${o.p24==null?"-":sg(o.p24)}</td>`;
   const rc=v=>v==null?"-":`<span class="${v>=rhi?"r":v<=rlo?"g":""}">${v.toFixed(1)}</span>`;
-  const el=all.filter(o=>o.e50!=null&&o.dv>=md&&o.cr&&o.cr.ago<cw&&(emaM==="both"||o.cr.type===emaM)).sort((a,b)=>a.cr.ago-b.cr.ago||b.dv-a.dv).slice(0,80);
+  const el0=all.filter(o=>o.e50!=null&&o.dv>=md&&o.cr&&o.cr.ago<cw&&(emaM==="both"||o.cr.type===emaM));
+  const el=sortBy(el0,"tbe").slice(0,200);
   $("tbe").innerHTML=el.map(o=>`<tr>${bc(o)}<td>${o.cr.type==="bull"?'<span class="v h">Bullish</span>':'<span class="v h" style="background:#fde8ea;color:#c0313e">Bearish</span>'}</td><td>${o.cr.ago===0?"latest candle":o.cr.ago+" candles ago"}</td><td>${fp(o.e50)}</td><td>${fp(o.e200)}</td><td class="${o.gap>=0?"g":"r"}">${sg(o.gap)}</td><td>${rc(o.rsi)}</td><td>$${fm(o.dv)}</td></tr>`).join("")||'<tr><td colspan="12" style="text-align:center;color:#7d8b99;padding:14px">No crosses in this window. Candle data loads over a few minutes.</td></tr>';
   $("cape").textContent=`EMA 50 crossing EMA 200 on ${tfl} candles, within the last ${cw} candles   (${el.length} coins)`;
-  const rl=all.filter(o=>o.rsi!=null&&o.dv>=md&&(rsiM==="all"||(rsiM==="ob"&&o.rsi>=rhi)||(rsiM==="os"&&o.rsi<=rlo))).sort((a,b)=>rsiM==="os"?a.rsi-b.rsi:b.rsi-a.rsi).slice(0,150);
+  const rl0=all.filter(o=>o.rsi!=null&&o.dv>=md&&(rsiM==="all"||(rsiM==="ob"&&o.rsi>=rhi)||(rsiM==="os"&&o.rsi<=rlo)));
+  const rl=sortBy(rl0,"tbr").slice(0,300);
   $("tbr").innerHTML=rl.map(o=>`<tr>${bc(o)}<td>${rc(o.rsi)}</td><td>${rc(o.rsip)}</td><td>${o.etr==="bull"?'<span class="g">EMA50 above EMA200</span>':'<span class="r">EMA50 below EMA200</span>'}</td><td>$${fm(o.dv)}</td></tr>`).join("")||'<tr><td colspan="9" style="text-align:center;color:#7d8b99;padding:14px">Nothing here yet. Candle data loads over a few minutes.</td></tr>';
   $("capr").textContent=`RSI (14) on ${tfl} candles. Overbought >= ${rhi}, oversold <= ${rlo}   (${rl.length} coins)`;
+  for(const id in SRT){$(id).closest("table").querySelectorAll("th[data-sk]").forEach(h=>{const on=h.dataset.sk===SRT[id][0];h.classList.toggle("asc",on&&SRT[id][1]>0);h.classList.toggle("desc",on&&SRT[id][1]<0)})}
   $("pgb").style.width=(elig?loaded/elig*100:0)+"%";
   $("st").textContent=`${elig} coins | volume data ${loaded}/${elig} | ${all.filter(o=>o.pre&&o.dv>=md).length} pre-pump | refresh in ${left}s`;
   $("src").innerHTML="Sources: "+Object.keys(NAME).map(k=>{
@@ -513,26 +532,67 @@ document.querySelectorAll("#pages button").forEach(b=>b.onclick=()=>{
   document.querySelectorAll(".pg").forEach(x=>x.classList.toggle("on",x.id==="pg-"+(page==="wl"?"mkt":page)));
   render();
 });
-// chart on top (TradingView)
-let cs="BINANCE:BTCUSDT.P",ci="15";
-function drawChart(){
-  if(!window.TradingView)return;
-  $("tv").innerHTML="";
-  new TradingView.widget({container_id:"tv",symbol:cs,interval:ci,theme:"light",style:"1",locale:"en",autosize:true,allow_symbol_change:false,save_image:false,backgroundColor:"#ffffff"});
+// chart on top: candles + volume + EMA 50 / EMA 200 (colors and theme adjustable)
+const IV={"1m":["1m","1",6e4],"5m":["5m","5",3e5],"15m":["15m","15",9e5],"1h":["1h","60",36e5],"4h":["4h","240",144e5],"D":["1d","D",864e5]};
+let ci="15m",cur={base:"BTC",bnSym:"BTCUSDT"},ch=null,sC,sV,s50,s200,lastK=null;
+let cp={theme:"light",c50:"#2962ff",c200:"#ff6d00",up:"#119a57",dn:"#e0404d"};
+try{Object.assign(cp,JSON.parse(localStorage.getItem("chartPrefs")||"{}"))}catch(e){}
+const saveCp=()=>{try{localStorage.setItem("chartPrefs",JSON.stringify(cp))}catch(e){}};
+const TH={light:{bg:"#ffffff",tx:"#14171c",gr:"#eef0f3"},dark:{bg:"#0b0f14",tx:"#d1d4dc",gr:"#1e2833"}};
+const themeOpts=()=>{const t=TH[cp.theme];return{layout:{background:{type:"solid",color:t.bg},textColor:t.tx},grid:{vertLines:{color:t.gr},horzLines:{color:t.gr}},rightPriceScale:{borderColor:t.gr},timeScale:{borderColor:t.gr}}};
+const candleOpts=()=>({upColor:cp.up,downColor:cp.dn,borderUpColor:cp.up,borderDownColor:cp.dn,wickUpColor:cp.up,wickDownColor:cp.dn});
+function paintVol(){if(lastK&&sV)sV.setData(lastK.map(x=>({time:x.t,value:x.v,color:(x.c>=x.o?cp.up:cp.dn)+"55"})))}
+function initChart(){
+  if(ch)return;
+  if(!window.LightweightCharts){$("tv").textContent="Chart library could not load (check your internet).";return}
+  ch=LightweightCharts.createChart($("tv"),{autoSize:true,timeScale:{timeVisible:true,secondsVisible:false},...themeOpts()});
+  sC=ch.addCandlestickSeries(candleOpts());
+  sV=ch.addHistogramSeries({priceFormat:{type:"volume"},priceScaleId:"vol"});
+  ch.priceScale("vol").applyOptions({scaleMargins:{top:.8,bottom:0}});
+  s50=ch.addLineSeries({color:cp.c50,lineWidth:2,priceLineVisible:false,lastValueVisible:false});
+  s200=ch.addLineSeries({color:cp.c200,lineWidth:2,priceLineVisible:false,lastValueVisible:false});
+  loadChart(true);
 }
-function setChart(o){
-  cs=o.bnSym?"BINANCE:"+o.bnSym+".P":o.bySym?"BYBIT:"+o.bySym+".P":"BINANCE:"+o.base+"USDT.P";
-  $("ct").textContent=o.base;drawChart();
-  window.scrollTo({top:0,behavior:"smooth"});
+async function loadChart(reset){
+  if(!ch)return;
+  try{
+    const [bi,yi,ms]=IV[ci];let k;
+    if(cur.bnSym)k=(await get(`${BF}/klines?symbol=${cur.bnSym}&interval=${bi}&limit=1000`)).map(x=>({t:Math.floor(x[0]/1e3),o:+x[1],h:+x[2],l:+x[3],c:+x[4],v:+x[5]}));
+    else if(cur.bySym)k=(await get(`${BYA}/kline?category=linear&symbol=${cur.bySym}&interval=${yi}&limit=1000`)).result.list.slice().reverse().map(x=>({t:Math.floor(+x[0]/1e3),o:+x[1],h:+x[2],l:+x[3],c:+x[4],v:+x[5]}));
+    else{const e=Date.now();k=(await hlPost({type:"candleSnapshot",req:{coin:cur.hlName,interval:bi,startTime:e-1000*ms,endTime:e}})).map(x=>({t:Math.floor(x.t/1e3),o:+x.o,h:+x.h,l:+x.l,c:+x.c,v:+x.v}))}
+    if(!k.length)return;
+    lastK=k;
+    const rg=reset?null:ch.timeScale().getVisibleLogicalRange();
+    sC.setData(k.map(x=>({time:x.t,open:x.o,high:x.h,low:x.l,close:x.c})));
+    paintVol();
+    const cl=k.map(x=>x.c),e50=ema(cl,50),e200=ema(cl,200);
+    s50.setData(k.flatMap((x,i)=>i>=50?[{time:x.t,value:e50[i]}]:[]));
+    s200.setData(k.flatMap((x,i)=>i>=200?[{time:x.t,value:e200[i]}]:[]));
+    if(rg)ch.timeScale().setVisibleLogicalRange(rg);
+    else ch.timeScale().setVisibleLogicalRange({from:k.length-120,to:k.length+5});
+  }catch(e){}
 }
-$("ivs").innerHTML=[["1","1m"],["5","5m"],["15","15m"],["60","1h"],["240","4h"],["D","D"]].map(x=>`<button data-i="${x[0]}" class="${x[0]===ci?"on":""}">${x[1]}</button>`).join(" ");
-$("ivs").onclick=e=>{const i=e.target.dataset&&e.target.dataset.i;if(!i)return;ci=i;[...$("ivs").children].forEach(x=>x.classList.toggle("on",x.dataset.i===i));drawChart()};
-window.addEventListener("load",drawChart);
+function applyCp(){
+  $("thm").textContent=cp.theme==="light"?"Dark chart":"Light chart";
+  ["c50","c200","up","dn"].forEach(id=>$("k_"+id).value=cp[id]);
+  if(!ch)return;
+  ch.applyOptions(themeOpts());
+  s50.applyOptions({color:cp.c50});s200.applyOptions({color:cp.c200});
+  sC.applyOptions(candleOpts());paintVol();
+}
+function setChart(o){cur=o;$("ct").textContent=o.base;loadChart(true);window.scrollTo({top:0,behavior:"smooth"})}
+$("ivs").innerHTML=Object.keys(IV).map(x=>`<button data-i="${x}" class="${x===ci?"on":""}">${x}</button>`).join(" ");
+$("ivs").onclick=e=>{const i=e.target.dataset&&e.target.dataset.i;if(!i)return;ci=i;[...$("ivs").children].forEach(x=>x.classList.toggle("on",x.dataset.i===i));loadChart(true)};
+["c50","c200","up","dn"].forEach(id=>$("k_"+id).oninput=e=>{cp[id]=e.target.value;saveCp();applyCp()});
+$("thm").onclick=()=>{cp.theme=cp.theme==="light"?"dark":"light";saveCp();applyCp()};
+window.addEventListener("load",()=>{initChart();applyCp()});
+setInterval(()=>loadChart(false),20000);
 function seg(id,fn){$(id).onclick=e=>{const m=e.target.dataset&&e.target.dataset.m;if(!m)return;[...$(id).children].forEach(b=>b.classList.toggle("on",b===e.target));fn(m);render()}}
-seg("segE",m=>emaM=m);seg("segR",m=>rsiM=m);
+seg("segE",m=>emaM=m);seg("segR",m=>{rsiM=m;SRT.tbr=["rsi",m==="os"?1:-1]});
 $("etf").onchange=()=>{coins.forEach(o=>{o.ea=0;o.e50=null;o.cr=null;o.rsi=null;o.rsip=null});render()};
 document.body.onclick=e=>{
   const d=e.target.dataset||{};
+  if(d.sk){const id=e.target.closest("table").querySelector("tbody").id,c=SRT[id];if(c){SRT[id]=[d.sk,c[0]===d.sk?-c[1]:(["base","ctype","etr"].includes(d.sk)?1:-1)];render();return}}
   if(d.c&&coins.get(d.c)){e.preventDefault();setChart(coins.get(d.c));return}
   const n=d.s;if(!n)return;
   wl.has(n)?wl.delete(n):wl.add(n);saveWl();render();
