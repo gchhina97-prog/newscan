@@ -160,7 +160,7 @@ body{padding-top:6px}
   <button id="nt">Alerts off</button>
 </div>
 <div class="src" id="src"></div></div>
-<div class="note">Click any column header on the Volume, Pre-pump, EMA 50/200 and RSI pages (and Markets) to sort ascending or descending. The chart shows EMA 50 and EMA 200 automatically; change their colors, the candle colors, or switch the chart between light and dark with the controls above it.<br>EMA 50/200 page: coins where EMA 50 crossed above EMA 200 (bullish) or below it (bearish) within the last few closed candles (4h by default, change under Filters). RSI page: RSI(14) on the same timeframe, with overbought/oversold buttons. Both pages use Binance/Bybit coins and need a few minutes to load candle history.<br>Pages: Volume = [10m Volume] and [1h Volume] above your minimums (default $1M and $5M, rolling dollar volume like Velo). Pre-pump = the same plus [1h OI Chg] above your minimum (default 0.1%) and, by default, price not pumped yet. Rising and Markets are the earlier screens. Volume and Pre-pump use Binance/Bybit coins. Tap a coin to load its chart on top.<br>
+<div class="note">Click any column header on the Volume, Pre-pump, EMA 50/200 and RSI pages (and Markets) to sort ascending or descending. The chart (no grid, no volume bars) shows EMA 50 and EMA 200 automatically, using the BWCO light and dark color sheets. Switching theme loads that sheet's colors; the color pickers above the chart then let you override EMA and candle colors.<br>EMA 50/200 page: coins where EMA 50 crossed above EMA 200 (bullish) or below it (bearish) within the last few closed candles (4h by default, change under Filters). RSI page: RSI(14) on the same timeframe, with overbought/oversold buttons. Both pages use Binance/Bybit coins and need a few minutes to load candle history.<br>Pages: Volume = [10m Volume] and [1h Volume] above your minimums (default $1M and $5M, rolling dollar volume like Velo). Pre-pump = the same plus [1h OI Chg] above your minimum (default 0.1%) and, by default, price not pumped yet. Rising and Markets are the earlier screens. Volume and Pre-pump use Binance/Bybit coins. Tap a coin to load its chart on top.<br>
 Before-pump filter (default on): the top section hides coins that already moved, so price must be within your max 15m move (default 1.5%), your max 1h move, 2x that over 4h, under your max 24h move, and funding not crowded (above 0.05%/8h). Top section: shows coins where the latest 15m volume is above normal by at least your minimum dollar amount (default $5M) OR open interest is up 3 checks in a row (15m steps, last hour, above your minimum rise). Coins with both are listed first and tagged BOTH. The dropdown lets you pick: Volume only (volume rising, ignore OI), OI only (OI rising, ignore volume), Volume OR OI, or Volume AND OI. OI history comes from Binance/Bybit coins only. Stocks, ETFs and commodity perps are hidden by default (Crypto only). Combined data: 24h volume is the sum across exchanges, open interest is the sum of Hyperliquid + Bybit + OKX, funding is the average (approx. per 8h). Exch letters: H Hyperliquid, B Binance, Y Bybit, O OKX.<br>
 Under each % is the extra dollar volume: latest window volume minus the normal (average) volume, e.g. +$5.2M. Vol % = latest closed window vs the average of earlier windows of the same size (15m vs previous 20 candles, 1h vs previous 24h, 4h vs previous 6 windows, 24h vs the 24h before). +200% means 3x normal. Candles come from Binance first, then Bybit, then Hyperliquid, so the columns fill in over a minute or two (Hyperliquid-only coins are slower).<br>
 Pre-pump = big volume spike while the 1h price move is still small. Signal (0 to 7) adds up spikes across timeframes. It finds unusual activity and cannot predict pumps. Use a stop-loss. Not financial advice.
@@ -535,20 +535,22 @@ document.querySelectorAll("#pages button").forEach(b=>b.onclick=()=>{
 // chart on top: candles + volume + EMA 50 / EMA 200 (colors and theme adjustable)
 const IV={"1m":["1m","1",6e4],"5m":["5m","5",3e5],"15m":["15m","15",9e5],"1h":["1h","60",36e5],"4h":["4h","240",144e5],"D":["1d","D",864e5]};
 let ci="15m",cur={base:"BTC",bnSym:"BTCUSDT"},ch=null,sC,sV,s50,s200,lastK=null;
-let cp={theme:"light",c50:"#2962ff",c200:"#ff6d00",up:"#119a57",dn:"#e0404d"};
-try{Object.assign(cp,JSON.parse(localStorage.getItem("chartPrefs")||"{}"))}catch(e){}
-const saveCp=()=>{try{localStorage.setItem("chartPrefs",JSON.stringify(cp))}catch(e){}};
-const TH={light:{bg:"#ffffff",tx:"#14171c",gr:"#eef0f3"},dark:{bg:"#0b0f14",tx:"#d1d4dc",gr:"#1e2833"}};
-const themeOpts=()=>{const t=TH[cp.theme];return{layout:{background:{type:"solid",color:t.bg},textColor:t.tx},grid:{vertLines:{color:t.gr},horzLines:{color:t.gr}},rightPriceScale:{borderColor:t.gr},timeScale:{borderColor:t.gr}}};
-const candleOpts=()=>({upColor:cp.up,downColor:cp.dn,borderUpColor:cp.up,borderDownColor:cp.dn,wickUpColor:cp.up,wickDownColor:cp.dn});
-function paintVol(){if(lastK&&sV)sV.setData(lastK.map(x=>({time:x.t,value:x.v,color:(x.c>=x.o?cp.up:cp.dn)+"55"})))}
+const TH={
+  light:{bg:"#f5f5f5",tx:"#678797",wick:"#022f31",bd:"#5c606b",up:"#d0d4dc",dn:"#678797",c50:"#eb6742",c200:"#425b91"},
+  dark:{bg:"#1e1e1e",tx:"#fbebe0",wick:"#b6b8c4",bd:null,up:"#fbebe0",dn:"#678797",c50:"#eaaf92",c200:"#eb6742"}
+};
+const pre=t=>({up:TH[t].up,dn:TH[t].dn,c50:TH[t].c50,c200:TH[t].c200});
+let cp={theme:"light",...pre("light")};
+try{Object.assign(cp,JSON.parse(localStorage.getItem("chartPrefs2")||"{}"))}catch(e){}
+const saveCp=()=>{try{localStorage.setItem("chartPrefs2",JSON.stringify(cp))}catch(e){}};
+
+const themeOpts=()=>{const t=TH[cp.theme];return{layout:{background:{type:"solid",color:t.bg},textColor:t.tx},grid:{vertLines:{visible:false},horzLines:{visible:false}},rightPriceScale:{borderVisible:false},timeScale:{borderVisible:false}}};
+const candleOpts=()=>{const t=TH[cp.theme];return{upColor:cp.up,downColor:cp.dn,borderVisible:!!t.bd,borderUpColor:t.bd||cp.up,borderDownColor:t.bd||cp.dn,wickUpColor:t.wick,wickDownColor:t.wick}};
 function initChart(){
   if(ch)return;
   if(!window.LightweightCharts){$("tv").textContent="Chart library could not load (check your internet).";return}
   ch=LightweightCharts.createChart($("tv"),{autoSize:true,timeScale:{timeVisible:true,secondsVisible:false},...themeOpts()});
   sC=ch.addCandlestickSeries(candleOpts());
-  sV=ch.addHistogramSeries({priceFormat:{type:"volume"},priceScaleId:"vol"});
-  ch.priceScale("vol").applyOptions({scaleMargins:{top:.8,bottom:0}});
   s50=ch.addLineSeries({color:cp.c50,lineWidth:2,priceLineVisible:false,lastValueVisible:false});
   s200=ch.addLineSeries({color:cp.c200,lineWidth:2,priceLineVisible:false,lastValueVisible:false});
   loadChart(true);
@@ -564,7 +566,6 @@ async function loadChart(reset){
     lastK=k;
     const rg=reset?null:ch.timeScale().getVisibleLogicalRange();
     sC.setData(k.map(x=>({time:x.t,open:x.o,high:x.h,low:x.l,close:x.c})));
-    paintVol();
     const cl=k.map(x=>x.c),e50=ema(cl,50),e200=ema(cl,200);
     s50.setData(k.flatMap((x,i)=>i>=50?[{time:x.t,value:e50[i]}]:[]));
     s200.setData(k.flatMap((x,i)=>i>=200?[{time:x.t,value:e200[i]}]:[]));
@@ -575,16 +576,17 @@ async function loadChart(reset){
 function applyCp(){
   $("thm").textContent=cp.theme==="light"?"Dark chart":"Light chart";
   ["c50","c200","up","dn"].forEach(id=>$("k_"+id).value=cp[id]);
+  const w=document.querySelector(".chart");w.style.background=TH[cp.theme].bg;w.style.color=TH[cp.theme].tx;
   if(!ch)return;
   ch.applyOptions(themeOpts());
   s50.applyOptions({color:cp.c50});s200.applyOptions({color:cp.c200});
-  sC.applyOptions(candleOpts());paintVol();
+  sC.applyOptions(candleOpts());
 }
 function setChart(o){cur=o;$("ct").textContent=o.base;loadChart(true);window.scrollTo({top:0,behavior:"smooth"})}
 $("ivs").innerHTML=Object.keys(IV).map(x=>`<button data-i="${x}" class="${x===ci?"on":""}">${x}</button>`).join(" ");
 $("ivs").onclick=e=>{const i=e.target.dataset&&e.target.dataset.i;if(!i)return;ci=i;[...$("ivs").children].forEach(x=>x.classList.toggle("on",x.dataset.i===i));loadChart(true)};
 ["c50","c200","up","dn"].forEach(id=>$("k_"+id).oninput=e=>{cp[id]=e.target.value;saveCp();applyCp()});
-$("thm").onclick=()=>{cp.theme=cp.theme==="light"?"dark":"light";saveCp();applyCp()};
+$("thm").onclick=()=>{cp.theme=cp.theme==="light"?"dark":"light";Object.assign(cp,pre(cp.theme));saveCp();applyCp()};
 window.addEventListener("load",()=>{initChart();applyCp()});
 setInterval(()=>loadChart(false),20000);
 function seg(id,fn){$(id).onclick=e=>{const m=e.target.dataset&&e.target.dataset.m;if(!m)return;[...$(id).children].forEach(b=>b.classList.toggle("on",b===e.target));fn(m);render()}}
