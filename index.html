@@ -59,6 +59,8 @@ th.asc::after{content:" \25B2"}th.desc::after{content:" \25BC"}
 .tvw{position:relative}
 .cd{position:absolute;left:12px;top:8px;z-index:3;font-size:12px;font-weight:600;pointer-events:none;font-variant-numeric:tabular-nums;line-height:1.5}
 .cd .dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:5px;vertical-align:middle}
+#tvx{height:min(62vh,520px)}
+.cd.r{left:auto;right:76px}
 .ex{color:var(--mu);font-size:11px;letter-spacing:1px}
 .note{color:var(--mu);font-size:11px;line-height:1.5;margin-top:10px}
 /* ---- light theme (Velo-style) ---- */
@@ -96,10 +98,11 @@ body{padding-top:6px}
 
 
 <div class="chart">
-  <div class="ch"><b id="ct">BTC</b><span id="ivs"></span><span class="sp"></span>
-    <label class="cl">EMA 50<input type="color" id="k_c50"></label><label class="cl">EMA 200<input type="color" id="k_c200"></label><label class="cl">Up<input type="color" id="k_up"></label><label class="cl">Down<input type="color" id="k_dn"></label><button id="thm">Dark chart</button></div>
-  <div class="tvw"><div id="tv"></div><div id="cd" class="cd"></div></div>
+  <div class="ch"><b id="ct">BTC</b><span id="m"><button id="m_tv" class="on">TradingView</button> <button id="m_ema">EMA chart</button></span><span id="ivs"></span><span class="sp"></span>
+    <span id="pk" style="display:none;gap:8px;align-items:center"><label class="cl">EMA 50<input type="color" id="k_c50"></label><label class="cl">EMA 200<input type="color" id="k_c200"></label><label class="cl">Up<input type="color" id="k_up"></label><label class="cl">Down<input type="color" id="k_dn"></label></span><button id="thm">Dark chart</button></div>
+  <div class="tvw"><div id="tv" style="display:none"></div><div id="tvx"></div><div id="cd" class="cd"></div></div>
 </div>
+<script src="https://s3.tradingview.com/tv.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/lightweight-charts@4.2.0/dist/lightweight-charts.standalone.production.js"></script>
 <div class="tabs" id="pages"><button data-p="vol" class="on">Volume</button><button data-p="pre">Pre-pump</button><button data-p="ema">EMA 50/200</button><button data-p="rsi">RSI</button><button data-p="rise">Rising</button><button data-p="mkt">Markets</button><button data-p="wl">&#9733; Watchlist</button></div>
 <details class="fl"><summary>Filters</summary><div class="bar">
@@ -163,7 +166,7 @@ body{padding-top:6px}
   <button id="nt">Alerts off</button>
 </div>
 <div class="src" id="src"></div></div>
-<div class="note">Click any column header on the Volume, Pre-pump, EMA 50/200 and RSI pages (and Markets) to sort ascending or descending. The chart (no grid, no volume bars) shows EMA 50 and EMA 200 automatically, using the BWCO light and dark color sheets. Switching theme loads that sheet's colors; the color pickers above the chart then let you override EMA and candle colors.<br>EMA 50/200 page: coins where EMA 50 crossed above EMA 200 (bullish) or below it (bearish) within the last few closed candles (4h by default, change under Filters). RSI page: RSI(14) on the same timeframe, with overbought/oversold buttons. Both pages use Binance/Bybit coins and need a few minutes to load candle history.<br>Pages: Volume = [10m Volume] and [1h Volume] above your minimums (default $1M and $5M, rolling dollar volume like Velo). Pre-pump = the same plus [1h OI Chg] above your minimum (default 0.1%) and, by default, price not pumped yet. Rising and Markets are the earlier screens. Volume and Pre-pump use Binance/Bybit coins. Tap a coin to load its chart on top.<br>
+<div class="note">Click any column header on the Volume, Pre-pump, EMA 50/200 and RSI pages (and Markets) to sort ascending or descending. Chart: the real TradingView chart is on top by default (live, with its drawing tools and Indicators button). Tap any coin to load it. It uses the BWCO light/dark colors with no grid or volume bars. The EMA chart button switches to our own live chart with EMA 50 and EMA 200 added automatically and color pickers.<br>EMA 50/200 page: coins where EMA 50 crossed above EMA 200 (bullish) or below it (bearish) within the last few closed candles (4h by default, change under Filters). RSI page: RSI(14) on the same timeframe, with overbought/oversold buttons. Both pages use Binance/Bybit coins and need a few minutes to load candle history.<br>Pages: Volume = [10m Volume] and [1h Volume] above your minimums (default $1M and $5M, rolling dollar volume like Velo). Pre-pump = the same plus [1h OI Chg] above your minimum (default 0.1%) and, by default, price not pumped yet. Rising and Markets are the earlier screens. Volume and Pre-pump use Binance/Bybit coins. Tap a coin to load its chart on top.<br>
 Before-pump filter (default on): the top section hides coins that already moved, so price must be within your max 15m move (default 1.5%), your max 1h move, 2x that over 4h, under your max 24h move, and funding not crowded (above 0.05%/8h). Top section: shows coins where the latest 15m volume is above normal by at least your minimum dollar amount (default $5M) OR open interest is up 3 checks in a row (15m steps, last hour, above your minimum rise). Coins with both are listed first and tagged BOTH. The dropdown lets you pick: Volume only (volume rising, ignore OI), OI only (OI rising, ignore volume), Volume OR OI, or Volume AND OI. OI history comes from Binance/Bybit coins only. Stocks, ETFs and commodity perps are hidden by default (Crypto only). Combined data: 24h volume is the sum across exchanges, open interest is the sum of Hyperliquid + Bybit + OKX, funding is the average (approx. per 8h). Exch letters: H Hyperliquid, B Binance, Y Bybit, O OKX.<br>
 Under each % is the extra dollar volume: latest window volume minus the normal (average) volume, e.g. +$5.2M. Vol % = latest closed window vs the average of earlier windows of the same size (15m vs previous 20 candles, 1h vs previous 24h, 4h vs previous 6 windows, 24h vs the 24h before). +200% means 3x normal. Candles come from Binance first, then Bybit, then Hyperliquid, so the columns fill in over a minute or two (Hyperliquid-only coins are slower).<br>
 Pre-pump = big volume spike while the 1h price move is still small. Signal (0 to 7) adds up spikes across timeframes. It finds unusual activity and cannot predict pumps. Use a stop-loss. Not financial advice.
@@ -558,9 +561,9 @@ function initChart(){
   s200=ch.addLineSeries({color:cp.c200,lineWidth:2,priceLineVisible:false,lastValueVisible:false});
   loadChart(true);
 }
-let loadTk=0,isLive=false,ws=null,wsKey=0;
+let loadTk=0,isLive=false,ws=null,wsKey=0,chartMode="tv";
 async function loadChart(reset){
-  if(!ch)return;
+  if(!ch||chartMode!=="ema")return;
   const tk=++loadTk;
   if(reset)lastK=null;
   try{
@@ -618,6 +621,8 @@ const pad2=n=>String(n).padStart(2,"0");
 function fmtLeft(sec){sec=Math.max(0,Math.floor(sec));const h=Math.floor(sec/3600),m=Math.floor(sec%3600/60);return(h?h+":":"")+pad2(m)+":"+pad2(sec%60)}
 function paintCd(){
   const el=$("cd");if(!el)return;
+  if(chartMode==="tv"){const ms=IV[ci][2];el.className="cd r";el.innerHTML=`${cur.base} ${ci}<br>closes in ${fmtLeft(ms/1e3-(Date.now()%ms)/1e3)}`;return}
+  el.className="cd";
   if(!lastK||!lastK.length){el.textContent="";return}
   const L=lastK[lastK.length-1],left=L.t+IV[ci][2]/1e3-Date.now()/1e3;
   el.innerHTML=`<span class="dot" style="background:${isLive?"#119a57":"#9aa4ad"}"></span>${cur.base} ${ci} &nbsp;${fp(L.c)}<br>closes in ${fmtLeft(left)}${isLive?"":" (reconnecting...)"}`;
@@ -631,12 +636,47 @@ function applyCp(){
   s50.applyOptions({color:cp.c50});s200.applyOptions({color:cp.c200});
   sC.applyOptions(candleOpts());
 }
-function setChart(o){cur=o;$("ct").textContent=o.base;loadChart(true);window.scrollTo({top:0,behavior:"smooth"})}
+function setChart(o){cur=o;$("ct").textContent=o.base;refreshChart();window.scrollTo({top:0,behavior:"smooth"})}
 $("ivs").innerHTML=Object.keys(IV).map(x=>`<button data-i="${x}" class="${x===ci?"on":""}">${x}</button>`).join(" ");
-$("ivs").onclick=e=>{const i=e.target.dataset&&e.target.dataset.i;if(!i)return;ci=i;[...$("ivs").children].forEach(x=>x.classList.toggle("on",x.dataset.i===i));loadChart(true)};
+$("ivs").onclick=e=>{const i=e.target.dataset&&e.target.dataset.i;if(!i)return;ci=i;[...$("ivs").children].forEach(x=>x.classList.toggle("on",x.dataset.i===i));refreshChart()};
 ["c50","c200","up","dn"].forEach(id=>$("k_"+id).oninput=e=>{cp[id]=e.target.value;saveCp();applyCp()});
-$("thm").onclick=()=>{cp.theme=cp.theme==="light"?"dark":"light";Object.assign(cp,pre(cp.theme));saveCp();applyCp()};
-window.addEventListener("load",()=>{initChart();applyCp()});
+$("thm").onclick=()=>{cp.theme=cp.theme==="light"?"dark":"light";Object.assign(cp,pre(cp.theme));saveCp();applyCp();if(chartMode==="tv")drawTv()};
+// real TradingView chart (live), BWCO colors, no grid, no volume
+const TVI={"1m":"1","5m":"5","15m":"15","1h":"60","4h":"240","D":"D"};
+const tvSym=o=>o.bnSym?"BINANCE:"+o.bnSym+".P":o.bySym?"BYBIT:"+o.bySym+".P":"BINANCE:"+o.base+"USDT.P";
+function drawTv(){
+  if(!window.TradingView){$("tvx").textContent="TradingView could not load (check your internet).";return}
+  const t=TH[cp.theme];
+  $("tvx").innerHTML="";
+  new TradingView.widget({container_id:"tvx",autosize:true,symbol:tvSym(cur),interval:TVI[ci],theme:cp.theme,style:"1",locale:"en",timezone:"Etc/UTC",
+    toolbar_bg:t.bg,backgroundColor:t.bg,hide_side_toolbar:false,allow_symbol_change:false,save_image:false,
+    disabled_features:["create_volume_indicator_by_default"],
+    overrides:{
+      "paneProperties.background":t.bg,"paneProperties.backgroundType":"solid",
+      "paneProperties.vertGridProperties.color":t.bg,"paneProperties.horzGridProperties.color":t.bg,
+      "scalesProperties.textColor":t.tx,"scalesProperties.lineColor":t.bg,"mainSeriesProperties.showCountdown":true,
+      "mainSeriesProperties.candleStyle.upColor":cp.up,"mainSeriesProperties.candleStyle.downColor":cp.dn,
+      "mainSeriesProperties.candleStyle.drawBorder":!!t.bd,
+      "mainSeriesProperties.candleStyle.borderUpColor":t.bd||cp.up,"mainSeriesProperties.candleStyle.borderDownColor":t.bd||cp.dn,
+      "mainSeriesProperties.candleStyle.wickUpColor":t.wick,"mainSeriesProperties.candleStyle.wickDownColor":t.wick
+    }});
+}
+function refreshChart(){
+  if(chartMode==="tv"){closeWs();lastK=null;drawTv()}else loadChart(true);
+  paintCd();
+}
+function applyMode(){
+  const tv=chartMode==="tv";
+  $("tvx").style.display=tv?"block":"none";$("tv").style.display=tv?"none":"block";
+  $("pk").style.display=tv?"none":"flex";
+  $("m_tv").classList.toggle("on",tv);$("m_ema").classList.toggle("on",!tv);
+  applyCp();
+  if(tv){closeWs();lastK=null;drawTv()}else if(!ch)initChart();else loadChart(true);
+  paintCd();
+}
+$("m_tv").onclick=()=>{chartMode="tv";applyMode()};
+$("m_ema").onclick=()=>{chartMode="ema";applyMode()};
+window.addEventListener("load",applyMode);
 setInterval(paintCd,1000);
 setInterval(()=>loadChart(false),120000);
 setInterval(()=>{if(!isLive)loadChart(false)},5000);
