@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#ffffff">
-<title>Pre-Pump Radar — Multi-Signal Scanner</title>
+<title>Pre-Pump Radar — Volume Reset at 7pm Winnipeg</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -27,7 +27,7 @@ button{background:#eef0f3;color:var(--tx);border:0;border-radius:6px;padding:7px
 button.on{background:#14171c;color:#fff;font-weight:600}
 .tabs{display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap}
 .wrap{overflow-x:auto;border-radius:8px}
-table{border-collapse:collapse;width:100%;min-width:980px;background:#fff;border:1px solid var(--line)}
+table{border-collapse:collapse;width:100%;min-width:1000px;background:#fff;border:1px solid var(--line)}
 th,td{padding:7px 9px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap}
 th{color:var(--mu);font-size:10px;font-weight:600;cursor:pointer;position:sticky;top:0;background:#fff}
 th:nth-child(-n+3),td:nth-child(-n+3){text-align:left}
@@ -41,9 +41,7 @@ a{color:var(--tx);text-decoration:none;font-weight:600}
 .sc{display:inline-block;min-width:22px;text-align:center;border-radius:4px;padding:2px 5px;font-weight:700;background:#eef0f3}
 .sc.m{background:#fff1cc;color:#8a5a00}.sc.h{background:#e2f6ea;color:#0d7a44}
 .tag{background:#e2f6ea;color:#0d7a44;border-radius:4px;padding:1px 5px;font-size:10px;font-weight:700;margin-left:4px}
-.tag.rd{background:#fde8ea;color:#c0313e}
 .d{font-size:11px;color:var(--mu);margin-top:2px}
-.sec{font-size:15px;margin:14px 0 6px;color:var(--tx)}
 .pg{display:none}.pg.on{display:block}
 .cap{color:var(--mu);font-size:12px;margin:6px 0}
 details.fl{margin-bottom:8px}details.fl summary{cursor:pointer;color:var(--tx);padding:4px 0;font-weight:600}
@@ -60,56 +58,59 @@ th.asc::after{content:" \25B2"}th.desc::after{content:" \25BC"}
 .sb i{display:block;width:4px;border-radius:1px;background:#eef0f3}
 .sb i.f{background:var(--gr)}
 .sb i.f.m{background:var(--yl)}
-.sb i.f.h{background:var(--gr)}
 .pump-star{color:var(--yl);font-size:14px;margin-left:4px}
 .long-bar{display:inline-flex;width:60px;height:8px;border-radius:4px;overflow:hidden;vertical-align:middle}
 .long-bar .l{background:var(--gr)}
 .long-bar .s{background:var(--rd)}
+.volcell{text-align:right;min-width:110px}
+.volcell .now{font-weight:700;font-size:13px}
+.volcell .mult{font-size:11px;font-weight:600;margin-left:3px}
+.volcell .base{font-size:10px;color:var(--mu)}
+.volcell.g .now{color:var(--gr)}
+.volcell.y .now{color:var(--yl)}
+.volcell.m .now{color:var(--mu)}
+.volcell .rise{color:var(--gr);font-weight:700;font-size:10px;margin-left:3px}
+/* Reset bar */
+.reset{margin-bottom:6px;font-size:11px;color:var(--mu)}
+.reset b{color:var(--tx)}
 </style>
 </head>
 <body>
 
 <div class="top">
-  <h1>pre-pump radar<span>multi-signal · coinglass-grade</span></h1>
+  <h1>pre-pump radar<span>volume window resets at 7pm Winnipeg</span></h1>
   <div class="sp"></div>
   <button id="ntf">&#128276; Alerts off</button>
 </div>
 
 <div class="src" id="src"></div>
 <div id="btc"></div>
+<div class="reset" id="resetbar"></div>
 
 <details class="fl" open><summary>Filters</summary><div class="bar">
   <label>Search<input id="q" placeholder="BTC"></label>
   <label>Market<select id="ty" style="width:125px"><option value="crypto">Crypto only</option><option value="all">Crypto + stocks</option></select></label>
   <label>Refresh<select id="ri"><option value="30" selected>30s</option><option value="60">60s</option><option value="120">2min</option></select></label>
   <label>Min 24h vol ($M)<input id="md" type="number" value="2" min="0" step="0.5"></label>
-  <label>Min 15m vol ($M)<input id="dv15" type="number" value="5" min="0" step="0.5"></label>
-  <label>Min 1h vol ($M)<input id="a1h" type="number" value="10" min="0" step="0.5"></label>
-  <label>Vol spike % (min)<input id="mv" type="number" value="100" min="10" step="10"></label>
+  <label>Abnormal ×: 15m<input id="x15" type="number" value="2" min="1" step="0.1"></label>
+  <label>Abnormal ×: 4h<input id="x4" type="number" value="1.5" min="1" step="0.1"></label>
+  <label>Abnormal ×: 24h<input id="x24" type="number" value="1.3" min="1" step="0.1"></label>
   <label>Max 1h price %<input id="mm" type="number" value="3" min="0" step="0.5"></label>
   <label>Max 15m price %<input id="m15" type="number" value="1.5" min="0.1" step="0.1"></label>
   <label>Max 24h price %<input id="m24" type="number" value="8" min="1" step="1"></label>
   <label>OI rise % 1h (min)<input id="mo" type="number" value="1" min="0" step="0.5"></label>
   <label>OI Z-score (min)<input id="mz" type="number" value="1.5" min="0" step="0.5"></label>
-  <label>Max off 24h high %<input id="mhi" type="number" value="-3" step="1"></label>
-  <label>Max 2h range %<input id="mtr" type="number" value="8" min="1" step="1"></label>
-  <label>EMA/RSI TF<select id="etf" style="width:70px"><option value="1h">1h</option><option value="4h" selected>4h</option><option value="1d">1d</option></select></label>
-  <label>EMA cross within<input id="ecw" type="number" value="6" min="1" step="1"></label>
-  <label>RSI OB<input id="rhi" type="number" value="70"></label>
-  <label>RSI OS<input id="rlo" type="number" value="30"></label>
   <button id="rf">Refresh now</button>
 </div>
 </details>
 
 <div class="tabs" id="pages">
   <button data-p="radar" class="on">&#9889; Pre-Pump Radar</button>
+  <button data-p="vol">&#128260; Volume</button>
   <button data-p="lsr">&#9878;&#65039; Longs / Shorts</button>
   <button data-p="liq">&#128165; Liquidation Risk</button>
   <button data-p="flow">&#128200; Order Flow</button>
   <button data-p="deriv">&#128202; Derivatives</button>
-  <button data-p="vol">&#128260; Volume</button>
-  <button data-p="ema">EMA 50/200</button>
-  <button data-p="rsi">RSI</button>
   <button data-p="mkt">All Markets</button>
   <button data-p="wl">&#9733; Watchlist</button>
 </div>
@@ -118,16 +119,36 @@ th.asc::after{content:" \25B2"}th.desc::after{content:" \25BC"}
 <div class="pg on" id="pg-radar">
 <div class="cap" id="capradar"></div>
 <div class="hit" id="logstat"></div>
-<div class="wrap"><table style="min-width:1200px">
+<div class="wrap"><table style="min-width:1300px">
 <thead><tr>
 <th></th><th data-sk="base">Coin</th><th data-sk="price">Price</th><th data-sk="p24">24h %</th>
 <th data-sk="score">Score</th><th data-sk="oiPct">OI 1h %</th><th data-sk="oiZ">OI Z</th>
-<th data-sk="dHi">Off hi</th><th data-sk="tight">2h rng</th><th data-sk="p1">1h px</th>
-<th data-sk="v15">Vol 15m</th><th data-sk="v4">Vol 4h</th><th data-sk="v24">Vol 24h</th>
-<th data-sk="vs">Rise</th><th data-sk="dv">24h vol</th><th>Flags</th><th data-sk="mcap">Mkt cap</th>
+<th data-sk="v15">15m vol vs reset</th>
+<th data-sk="v4">4h vol vs reset</th>
+<th data-sk="v24">24h vol vs reset</th>
+<th data-sk="dv7">7d vol</th>
+<th data-sk="dv30">30d vol</th>
+<th data-sk="dv">24h total</th><th>Flags</th><th data-sk="mcap">Mkt cap</th>
 </tr></thead>
 <tbody id="tbradar"></tbody></table></div>
+<div class="cap" style="margin-top:8px;line-height:1.7">
+<b>How to read the volume columns:</b><br>
+&nbsp;&nbsp;&bull; <b>+N%</b> = how much bigger this window is vs the same-length window starting at the daily reset (7pm Winnipeg)<br>
+&nbsp;&nbsp;&bull; <b>(+N)</b> in <span class="g">green</span> after the number = N consecutive rising candles &mdash; volume is <b>still increasing</b>, not just spiked once<br>
+&nbsp;&nbsp;&bull; <b class="g">Green</b> = above your abnormal threshold &middot; <b class="yl">Yellow</b> = warm &middot; <b class="mu">Grey</b> = flat<br>
+&nbsp;&nbsp;&bull; Only coins where <b>15m AND 4h AND 24h</b> all exceed their abnormal × appear here
 </div>
+</div>
+
+<!-- VOLUME -->
+<div class="pg" id="pg-vol"><div class="cap" id="capv"></div><div class="wrap"><table style="min-width:1100px">
+<thead><tr>
+<th></th><th data-sk="base">Coin</th><th data-sk="price">Price</th><th data-sk="p24">24h %</th>
+<th data-sk="v15">15m vol</th><th data-sk="v4">4h vol</th><th data-sk="v24">24h vol</th>
+<th data-sk="dv7">7d vol</th><th data-sk="dv30">30d vol</th>
+<th data-sk="oiPct">1h OI chg</th><th data-sk="oi">Open interest</th>
+</tr></thead>
+<tbody id="tbv"></tbody></table></div></div>
 
 <!-- LONGS / SHORTS -->
 <div class="pg" id="pg-lsr"><div class="cap" id="caplsr"></div>
@@ -147,7 +168,7 @@ th.asc::after{content:" \25B2"}th.desc::after{content:" \25BC"}
 <th></th><th data-sk="base">Coin</th><th data-sk="price">Price</th><th data-sk="p24">24h %</th>
 <th data-sk="liqScore">Risk Score</th><th data-sk="liqDir">Risk Direction</th>
 <th data-sk="oi">OI</th><th data-sk="fund">Funding</th>
-<th data-sk="dHi">Off 24h hi</th><th data-sk="dv">24h vol</th>
+<th data-sk="dv">24h vol</th>
 </tr></thead>
 <tbody id="tbliq"></tbody></table></div>
 </div>
@@ -158,7 +179,7 @@ th.asc::after{content:" \25B2"}th.desc::after{content:" \25BC"}
 <thead><tr>
 <th></th><th data-sk="base">Coin</th><th data-sk="price">Price</th><th data-sk="p24">24h %</th>
 <th data-sk="cvd">CVD (1h)</th><th data-sk="taker">Taker buy %</th><th data-sk="cvdDiv">CVD/Price div</th>
-<th data-sk="lsr">Long/Short</th><th data-sk="v15">Vol 15m %</th><th data-sk="dv">24h vol</th>
+<th data-sk="lsr">Long/Short</th><th data-sk="v15">Vol 15m</th><th data-sk="dv">24h vol</th>
 </tr></thead>
 <tbody id="tbflow"></tbody></table></div>
 </div>
@@ -174,26 +195,11 @@ th.asc::after{content:" \25B2"}th.desc::after{content:" \25BC"}
 <tbody id="tbderiv"></tbody></table></div>
 </div>
 
-<!-- VOLUME -->
-<div class="pg" id="pg-vol"><div class="cap" id="capv"></div><div class="wrap"><table style="min-width:1000px">
-<thead><tr><th></th><th data-sk="base">Coin</th><th data-sk="price">Price</th><th data-sk="p24">24h %</th><th data-sk="p1">1h price</th><th data-sk="dHi">Off 24h hi</th><th data-sk="tight">2h range</th><th data-sk="q10">10m volume</th><th data-sk="q1h">1h volume</th><th data-sk="oiPct">1h OI chg</th><th data-sk="oi">Open interest</th></tr></thead>
-<tbody id="tbv"></tbody></table></div></div>
-
-<!-- EMA -->
-<div class="pg" id="pg-ema"><div class="cap" id="cape"></div>
-<div class="seg" id="segE"><button data-m="both" class="on">All</button><button data-m="bull">Bullish</button><button data-m="bear">Bearish</button></div>
-<div class="wrap"><table style="min-width:900px"><thead><tr><th></th><th data-sk="base">Coin</th><th data-sk="price">Price</th><th data-sk="p24">24h %</th><th data-sk="ctype">Cross</th><th data-sk="ago">When</th><th data-sk="e50">EMA 50</th><th data-sk="e200">EMA 200</th><th data-sk="gap">Gap %</th><th data-sk="rsi">RSI</th><th data-sk="dv">24h vol</th></tr></thead><tbody id="tbe"></tbody></table></div></div>
-
-<!-- RSI -->
-<div class="pg" id="pg-rsi"><div class="cap" id="capr"></div>
-<div class="seg" id="segR"><button data-m="all" class="on">All</button><button data-m="ob">Overbought</button><button data-m="os">Oversold</button></div>
-<div class="wrap"><table style="min-width:800px"><thead><tr><th></th><th data-sk="base">Coin</th><th data-sk="price">Price</th><th data-sk="p24">24h %</th><th data-sk="rsi">RSI (14)</th><th data-sk="rsip">Prev RSI</th><th data-sk="etr">EMA trend</th><th data-sk="dv">24h vol</th></tr></thead><tbody id="tbr"></tbody></table></div></div>
-
 <!-- MARKETS -->
 <div class="pg" id="pg-mkt"><div class="wrap"><table>
 <thead><tr>
 <th></th><th data-k="base">Coin</th><th data-k="price">Price</th><th data-k="p24">24h %</th>
-<th data-k="v15">Vol 15m %</th><th data-k="v1">Vol 1h %</th><th data-k="v4">Vol 4h %</th><th data-k="v24">Vol 24h %</th>
+<th data-k="v15">Vol 15m</th><th data-k="v4">Vol 4h</th><th data-k="v24">Vol 24h</th>
 <th data-k="oiPct">OI 1h %</th><th data-k="dv">24h vol</th><th data-k="oi">OI</th><th data-k="score">Score</th>
 </tr></thead>
 <tbody id="tb"></tbody>
@@ -207,7 +213,7 @@ const CG="https://api.coingecko.com/api/v3";
 const $=id=>document.getElementById(id);
 const coins=new Map(),status={},hold={},busy={};
 const LET={hl:"H",bn:"B",by:"Y",ok:"O"},NAME={hl:"Hyperliquid",bn:"Binance",by:"Bybit",ok:"OKX"};
-let emaM="both",rsiM="all",page="radar",sk="score",sd=-1,left=0,lastR=0,btcP1=null,btcP24=null;
+let page="radar",sk="score",sd=-1,left=0,lastR=0,btcP1=null,btcP24=null;
 let alerts=!!(window.Notification&&Notification.permission==="granted");
 let wl=new Set();
 try{wl=new Set(JSON.parse(localStorage.getItem("wl")||"[]"))}catch(e){}
@@ -215,11 +221,57 @@ const saveWl=()=>{try{localStorage.setItem("wl",JSON.stringify([...wl]))}catch(e
 
 const MCAP=new Map();let mcapAt=0;
 
-const FILTERS=["q","mv","mm","md","ty","mo","rm","dv15","ep","m24","m15","a10","a1h","aoi","ecw","rhi","rlo","ri","etf","mz","mhi","mtr"];
+const FILTERS=["q","md","x15","x4","x24","mm","m15","m24","mo","mz","ri","ty"];
 try{const s=JSON.parse(localStorage.getItem("filters")||"{}");for(const k of FILTERS)if(s[k]!=null&&$(k))$(k).value=s[k]}catch(e){}
 function saveFilters(){const s={};for(const k of FILTERS)if($(k))s[k]=$(k).value;try{localStorage.setItem("filters",JSON.stringify(s))}catch(e){}}
 
-// SIGNAL LOG
+// ---- Reset time: 7pm Winnipeg (CDT = UTC-5 during DST, CST = UTC-6 otherwise) ----
+// Winnipeg is America/Winnipeg. DST runs roughly Mar-Nov. Compute "minutes since last 7pm local".
+function winnipegOffsetHours(){
+  // Detect DST by checking what local hour UTC midnight maps to in Winnipeg
+  // Simple rule: 2nd Sunday March - 1st Sunday Nov = DST (UTC-5), else UTC-6
+  const now=new Date();
+  const y=now.getUTCFullYear();
+  const mar=new Date(Date.UTC(y,2,1));
+  const marSun=mar.getUTCDay();
+  const marSecondSun=marSun===0?8:15-marSun; // 2nd Sunday of March
+  const nov=new Date(Date.UTC(y,10,1));
+  const novSun=nov.getUTCDay();
+  const novFirstSun=novSun===0?1:8-novSun; // 1st Sunday of Nov
+  const dstStart=Date.UTC(y,2,marSecondSun,7,0,0); // 07:00 UTC = 02:00 local CST
+  const dstEnd=Date.UTC(y,10,novFirstSun,6,0,0);   // 06:00 UTC = 02:00 local CDT
+  const t=now.getTime();
+  return (t>=dstStart&&t<dstEnd)?-5:-6;
+}
+function lastResetMs(){
+  const off=winnipegOffsetHours();
+  const now=Date.now();
+  const dayMs=86400000;
+  // Find the most recent 19:00 Winnipeg = (19 - off) : 00 UTC
+  const utcHourOfReset=19-off; // 19 - (-5) = 24 → 00 UTC; 19 - (-6) = 25 → 01 UTC
+  // Simpler: convert now to Winnipeg local, floor to 19:00, convert back
+  const wpgNow=new Date(now+(off*3600000)+(new Date(now).getTimezoneOffset()*60000));
+  // Instead: compute the UTC ms of the most recent local 19:00 directly
+  const utcOffsetMs=off*3600000;
+  const localMs=now+utcOffsetMs;
+  const localDay=Math.floor(localMs/dayMs);
+  let resetLocalMs=localDay*dayMs+19*3600000;
+  if(resetLocalMs>localMs)resetLocalMs-=dayMs;
+  return resetLocalMs-utcOffsetMs;
+}
+function resetLabel(){
+  const r=lastResetMs();
+  const d=new Date(r);
+  // format in Winnipeg local
+  const off=winnipegOffsetHours();
+  const local=new Date(r+off*3600000);
+  const hh=String(local.getUTCHours()).padStart(2,"0");
+  const mm=String(local.getUTCMinutes()).padStart(2,"0");
+  const ago=Math.floor((Date.now()-r)/60000);
+  const hours=Math.floor(ago/60), mins=ago%60;
+  return `Last reset: ${hh}:${mm} Winnipeg (${hours}h ${mins}m ago). All % compare the current window to the window starting at this time.`;
+}
+
 const SIGLOG=[];
 try{const s=JSON.parse(localStorage.getItem("siglog")||"[]");if(Array.isArray(s))for(const x of s)SIGLOG.push(x)}catch(e){}
 function logSignals(all){
@@ -229,7 +281,7 @@ function logSignals(all){
     if(!o.pre)continue;
     const last=SIGLOG.find(x=>x.k===o.key&&now-x.t<3600e3);
     if(last)continue;
-    SIGLOG.push({k:o.key,b:o.base,t:now,p:o.price,v15:o.v15,v1:o.v1,p1:o.p1,oi:o.oiPct,oiZ:o.oiZ,cvd:o.cvd,r1:null,r4:null,r24:null,rNow:null});
+    SIGLOG.push({k:o.key,b:o.base,t:now,p:o.price,v15:o.v15,v4:o.v4,oi:o.oiPct,oiZ:o.oiZ,cvd:o.cvd,r1:null,r4:null,r24:null,rNow:null});
     changed=true;
   }
   for(const s of SIGLOG){
@@ -269,7 +321,7 @@ async function loadInfo(){
     meta.ok||get(OKA+"/public/instruments?instType=SWAP").then(d=>{meta.ok=new Map(d.data.map(x=>[x.instId,x]))}).catch(()=>{})
   ]);
 }
-function up(b,tf){const k=b+(tf?"~":"");let o=coins.get(k);if(!o){o={base:b,key:k,tf:!!tf,ex:{},at:0};coins.set(k,o)}return o}
+function up(b,tf){const k=b+(tf?"~":"");let o=coins.get(k);if(!o){o={base:b,key:k,tf:!!tf,ex:{},at:0,hist:0};coins.set(k,o)}return o}
 
 async function loadMcap(){
   if(Date.now()-mcapAt<300000)return;
@@ -349,41 +401,116 @@ function agg(o){
   o.mcap=MCAP.get(o.base)||null;
 }
 
-function calc(o,k){
-  const v=k.map(x=>x.q),n=v.length;
-  const sum=(a,b)=>{let s=0;for(let i=a;i<b;i++)s+=v[i];return s};
-  const win=(kk,L)=>{
-    if(n<(L+1)*kk)return null;
-    const cur=sum(n-kk,n);let p=0;
-    for(let w=1;w<=L;w++)p+=sum(n-kk*(w+1),n-kk*w);
-    p/=L;return p>0?[(cur/p-1)*100,cur-p]:null;
-  };
-  const pc=kk=>{if(n<kk)return null;const a=k[n-kk].o,b=k[n-1].c;return a?(b-a)/a*100:null};
-  const a=win(1,20),b=win(4,24),c=win(16,6),d=win(96,1);
-  o.v15=a&&a[0];o.d15=a&&a[1];o.v1=b&&b[0];o.d1=b&&b[1];o.v4=c&&c[0];o.d4=c&&c[1];o.v24=d&&d[0];o.d24=d&&d[1];
-  if(!a)o.v15=null;if(!b)o.v1=null;if(!c)o.v4=null;if(!d)o.v24=null;
-  o.dv15=a&&a[1]!=null?a[1]:null;o.dv4=c&&c[1]!=null?c[1]:null;o.dv24=d&&d[1]!=null?d[1]:null;
-  o.qv15=n>=1?sum(n-1,n):null;o.qv4=n>=16?sum(n-16,n):null;o.qv24=n>=96?sum(n-96,n):null;
-  o.p15=pc(1);o.p1=pc(4);o.p4=pc(16);
-  let st=0;for(let i=n-1;i>=1&&st<8;i--){if(v[i]>v[i-1])st++;else break}
-  o.vs=st;o.lq=v[n-1];
-  const w24=k.slice(-96);
-  if(w24.length){
-    o.hi24=Math.max(...w24.map(x=>x.h||x.c));
-    o.lo24=Math.min(...w24.map(x=>x.l||x.c));
-    const lastC=k[n-1].c;
-    o.dHi=o.hi24?(lastC/o.hi24-1)*100:null;
-    o.range24=o.lo24?((o.hi24/o.lo24-1)*100):null;
+// ============================================================
+// VOLUME vs the daily reset (7pm Winnipeg).
+// We fetch 15m candles covering >= 30 days, then:
+//    - slice everything from the last reset → "current"
+//    - slice the same-length window just before → "previous"
+//    - ratio = current / previous
+//    - rise = consecutive 15m candles at the end that keep increasing
+// ============================================================
+const cb={ // candle lookbacks per source (needed to cover 30 days)
+  bn:2000,  // Binance max 1500 per call, we use 2 calls below
+  by:1000,  // Bybit max 1000
+  hl:500    // HL max ~500, we get ~5 days only (documented)
+};
+
+async function fetchCandles(src,o){
+  if(src==="bn"){
+    // two 1000-candle calls = ~20.8 days at 15m each. That's enough for 7d and almost 30d.
+    const [a,b]=await Promise.all([
+      get(`${BF}/klines?symbol=${o.bnSym}&interval=15m&limit=1000`),
+      get(`${BF}/klines?symbol=${o.bnSym}&interval=15m&endTime=${Date.now()-1000*15*60*1000}&limit=1000`).catch(()=>[])
+    ]);
+    const rows=[...b,...a]; // b is older, a is newer
+    const seen=new Set();
+    return rows.filter(x=>{
+      const t=x[0];if(seen.has(t))return false;seen.add(t);return true;
+    }).map(x=>({t:+x[0],q:+x[7]}));
   }
-  const t2=k.slice(-8);
-  if(t2.length){
-    const hi=Math.max(...t2.map(x=>x.h||x.c));
-    const lo=Math.min(...t2.map(x=>x.l||x.c));
-    o.tight=lo?((hi/lo-1)*100):null;
+  if(src==="by"){
+    const r=await get(`${BYA}/kline?category=linear&symbol=${o.bySym}&interval=15&limit=1000`);
+    return r.result.list.slice().reverse().map(x=>({t:+x[0],q:+x[6]}));
   }
+  if(src==="hl"){
+    const t=Date.now();
+    const r=await hlPost({type:"candleSnapshot",req:{coin:o.hlName,interval:"15m",startTime:t-5*24*3600e3,endTime:t}});
+    return r.map(x=>({t:+x.t,q:+x.v*+x.c}));
+  }
+  return [];
 }
 
-// OI HISTORY
+function computeVolume(o,candles){
+  if(!candles||candles.length<96)return;
+  const r=lastResetMs();
+  // Find index where candle.t >= r (current window)
+  const iReset=candles.findIndex(c=>c.t>=r);
+  if(iReset<0)return;
+  const dayMs=86400000;
+  // Cutoffs (in ms)
+  const tNow=Date.now();
+  const w15=tNow-15*60*1000;
+  const w4 =tNow-4*3600*1000;
+  const w24=tNow-24*3600*1000;
+  const w7 =tNow-7*dayMs;
+  const w30=tNow-30*dayMs;
+
+  const sumRange=(from,to)=>{
+    let s=0;
+    for(const c of candles){if(c.t>=from&&c.t<to)s+=c.q}
+    return s;
+  };
+
+  // Current short windows
+  o.qv15=sumRange(w15,tNow);
+  o.qv4 =sumRange(w4,tNow);
+  o.qv24=sumRange(w24,tNow);
+  o.qv7 =sumRange(w7,tNow);
+  o.qv30=sumRange(w30,tNow);
+
+  // Previous same-length windows (for %)
+  o.bv15=sumRange(w15-(w15-r?0:w15), w15)||sumRange(w15-15*60*1000,w15);
+  o.bv4 =sumRange(w4-4*3600*1000,w4);
+  o.bv24=sumRange(w24-24*3600*1000,w24);
+
+  // Better: compare to same-length window ENDING at reset
+  o.bv15Reset=sumRange(r,r+15*60*1000);
+  o.bv4Reset =sumRange(r,r+4*3600*1000);
+  o.bv24Reset=sumRange(r,r+24*3600*1000);
+
+  const ratio=(cur,base)=>(base>0)?(cur/base):null;
+  // "vs reset" ratio: current short window vs the same-length window that opened at the reset
+  o.r15=ratio(o.qv15,o.bv15Reset||o.bv15);
+  o.r4 =ratio(o.qv4, o.bv4Reset ||o.bv4);
+  o.r24=ratio(o.qv24,o.bv24Reset||o.bv24);
+
+  // Percent version
+  o.v15=o.r15!=null?(o.r15-1)*100:null;
+  o.v4 =o.r4 !=null?(o.r4 -1)*100:null;
+  o.v24=o.r24!=null?(o.r24-1)*100:null;
+
+  // Consecutive rising 15m candles at the tail
+  let st=0;
+  for(let i=candles.length-1;i>=1;i--){
+    if(candles[i].q>candles[i-1].q)st++;
+    else break;
+    if(st>30)break;
+  }
+  o.vs=st;
+
+  // 7d / 30d totals
+  o.dv7=o.qv7;
+  o.dv30=o.qv30;
+
+  // For "vs 7d avg daily" and "vs 30d avg daily"
+  const days7=Math.min(7,(tNow-w7)/dayMs);
+  const days30=Math.min(30,(tNow-w30)/dayMs);
+  o.avg7 =days7>0?o.qv7/days7:null;
+  o.avg30=days30>0?o.qv30/days30:null;
+  o.r7 =o.avg7?(o.qv24/o.avg7):null;   // today's 24h vs 7d daily average
+  o.r30=o.avg30?(o.qv24/o.avg30):null;
+}
+
 const ofn={
   bn:async o=>(await get(`${BFD}/openInterestHist?symbol=${o.bnSym}&period=15m&limit=5`)).map(x=>+x.sumOpenInterestValue),
   by:async o=>(await get(`${BYA}/open-interest?category=linear&symbol=${o.bySym}&intervalTime=15min&limit=5`)).result.list.slice().reverse().map(x=>+x.openInterest)
@@ -406,8 +533,7 @@ async function tickOi(){
     if(o.tf||!(o.src==="bn"||o.src==="by")||o.dv<(+$("md").value||0)*1e6)continue;
     const age=now-(o.oat||0);
     if(o.oat&&age<90000)continue;
-    const hot=o.q1h>=(+$("a1h").value||0)*1e6;
-    const sc=o.oat?age*(hot||o.d15>=(+$("dv15").value||0)*1e6?3:1):1e12+o.dv+(hot?1e13:0);
+    const sc=o.oat?age:1e12+o.dv;
     if(sc>bs){bs=sc;best=o}
   }
   if(!best)return;
@@ -417,7 +543,6 @@ async function tickOi(){
   busy.oi=false;
 }
 
-// ORDER FLOW + LONG/SHORT
 const flowFns={
   bn:{
     taker:async o=>(await get(`${BFD}/takerlongshortRatio?symbol=${o.bnSym}&period=1h&limit=6`)).map(x=>({buy:+x.buyVol,sell:+x.sellVol,ratio:+x.buySellRatio})),
@@ -444,7 +569,7 @@ async function tickFlow(src){
   for(const o of coins.values()){
     if(o.src!==src||o.dv<md||o.tf)continue;
     const age=now-(o.fa||0);
-    if(o.fa&&age<60000)continue;
+    if(o.fa&&age<120000)continue;
     const sc=o.fa?age:1e12+o.dv;
     if(sc>bs){bs=sc;best=o}
   }
@@ -463,131 +588,42 @@ async function tickFlow(src){
   busy[k]=false;
 }
 
-// 1-MIN VOLUME
-const m1f={
-  bn:async o=>(await get(`${BF}/klines?symbol=${o.bnSym}&interval=1m&limit=60`)).map(x=>({q:+x[7]})),
-  by:async o=>(await get(`${BYA}/kline?category=linear&symbol=${o.bySym}&interval=1&limit=60`)).result.list.slice().reverse().map(x=>({q:+x[6]}))
-};
-function calc1(o,k){
-  if(k.length<10)return;
-  const sm=m=>k.slice(-m).reduce((a,x)=>a+x.q,0);
-  o.q10=sm(10);o.q1h=sm(60);
-}
-async function tick1(src){
-  const k1="m"+src;
-  if(busy[k1]||Date.now()<(hold[k1]||0))return;
-  const md=(+$("md").value||0)*1e6,now=Date.now(),tfOn=$("ty").value==="all",a1=(+$("a1h").value||0)*1e6;let best=null,bs=-1;
-  for(const o of coins.values()){
-    if(o.src!==src||o.dv<md||(o.tf&&!tfOn))continue;
-    const age=now-(o.a1||0);
-    if(o.a1&&age<20000)continue;
-    const sc=o.a1?age*(o.q1h>=a1?4:1):1e12+o.dv;
-    if(sc>bs){bs=sc;best=o}
-  }
-  if(!best)return;
-  busy[k1]=true;
-  try{calc1(best,await m1f[src](best));best.a1=Date.now()}
-  catch(e){if(String(e.message)==="429")hold[k1]=Date.now()+20000;else best.a1=Date.now()}
-  busy[k1]=false;
-}
-
-// EMA / RSI
-const TFM={"1h":["1h","60"],"4h":["4h","240"],"1d":["1d","D"]};
-const ef={
-  bn:async o=>(await get(`${BF}/klines?symbol=${o.bnSym}&interval=${TFM[$("etf").value][0]}&limit=499`)).map(x=>+x[4]),
-  by:async o=>(await get(`${BYA}/kline?category=linear&symbol=${o.bySym}&interval=${TFM[$("etf").value][1]}&limit=500`)).result.list.slice().reverse().map(x=>+x[4])
-};
-function ema(c,p){const k=2/(p+1),r=[c[0]];for(let i=1;i<c.length;i++)r.push(c[i]*k+r[i-1]*(1-k));return r}
-function calcE(o,c){
-  c=c.slice(0,-1);const n=c.length;if(n<260)return;
-  const a=ema(c,50),b=ema(c,200);let cr=null;
-  for(let i=n-1;i>=Math.max(201,n-80);i--){
-    const u=a[i]>b[i];
-    if(u!==(a[i-1]>b[i-1])){cr={type:u?"bull":"bear",ago:n-1-i};break}
-  }
-  o.e50=a[n-1];o.e200=b[n-1];o.gap=(a[n-1]/b[n-1]-1)*100;o.cr=cr;o.etr=a[n-1]>b[n-1]?"bull":"bear";
-  let g=0,l=0,pr=null,rs=null;
-  for(let i=1;i<n;i++){
-    const d=c[i]-c[i-1],u=d>0?d:0,w=d<0?-d:0;
-    if(i<=14){g+=u;l+=w;if(i===14){g/=14;l/=14;rs=l===0?100:100-100/(1+g/l)}}
-    else{g=(g*13+u)/14;l=(l*13+w)/14;pr=rs;rs=l===0?100:100-100/(1+g/l)}
-  }
-  o.rsi=rs;o.rsip=pr;
-}
-async function tickE(src){
-  const k="e"+src;
-  if(busy[k]||Date.now()<(hold[k]||0))return;
-  const md=(+$("md").value||0)*1e6,now=Date.now(),tfOn=$("ty").value==="all";let best=null,bs=-1;
-  for(const o of coins.values()){
-    if(o.src!==src||o.dv<md||(o.tf&&!tfOn))continue;
-    const age=now-(o.ea||0);
-    if(o.ea&&age<300000)continue;
-    const sc=o.ea?age:1e12+o.dv;
-    if(sc>bs){bs=sc;best=o}
-  }
-  if(!best)return;
-  busy[k]=true;
-  try{calcE(best,await ef[src](best));best.ea=Date.now()}
-  catch(e){if(String(e.message)==="429")hold[k]=Date.now()+30000;else best.ea=Date.now()}
-  busy[k]=false;
-}
-
-// 15m CANDLES
-const cf={
-  bn:async o=>(await get(`${BF}/klines?symbol=${o.bnSym}&interval=15m&limit=195`)).map(x=>({o:+x[1],h:+x[2],l:+x[3],c:+x[4],q:+x[7]})),
-  by:async o=>(await get(`${BYA}/kline?category=linear&symbol=${o.bySym}&interval=15&limit=195`)).result.list.slice().reverse().map(x=>({o:+x[1],h:+x[2],l:+x[3],c:+x[4],q:+x[6]})),
-  hl:async o=>{const t=Date.now();return (await hlPost({type:"candleSnapshot",req:{coin:o.hlName,interval:"15m",startTime:t-49*3600e3,endTime:t}})).map(x=>({o:+x.o,h:+x.h,l:+x.l,c:+x.c,q:+x.v*+x.c}))}
-};
-async function tick(src){
-  if(busy[src]||Date.now()<(hold[src]||0))return;
+// Long-history candle fetcher (round-robin, slow because it's heavy)
+async function tickHist(src){
+  if(busy["h"+src]||Date.now()<(hold["h"+src]||0))return;
   const md=(+$("md").value||0)*1e6,now=Date.now();let best=null,bs=-1;
   for(const o of coins.values()){
-    if(o.src!==src||o.dv<md||(o.tf&&$("ty").value!=="all"))continue;
-    const age=now-o.at;
-    if(o.at&&age<30000)continue;
-    const w=(o.pre||o.score>=4)?4:1;
-    const sc=o.at?age*w:1e12+o.dv;
+    if(o.src!==src||o.dv<md||o.tf)continue;
+    const age=now-(o.ha||0);
+    if(o.ha&&age<1800000)continue; // refresh each coin max every 30 min
+    const sc=o.ha?age:1e12+o.dv;
     if(sc>bs){bs=sc;best=o}
   }
   if(!best)return;
-  busy[src]=true;
+  busy["h"+src]=true;
   try{
-    const k=await cf[src](best);
-    if(k.length>1)calc(best,k.slice(0,-1));
-    best.at=Date.now();
+    const k=await fetchCandles(src,best);
+    computeVolume(best,k);
+    best.ha=Date.now();
   }catch(e){
-    if(String(e.message)==="429")hold[src]=Date.now()+20000;else best.at=Date.now();
+    if(String(e.message)==="429")hold["h"+src]=Date.now()+60000;else best.ha=Date.now();
   }
-  busy[src]=false;
-}
-
-// SORTING
-const SRT={tbv:["q1h",-1],tbradar:["score",-1],tbflow:["cvd",-1],tbderiv:["oiPct",-1],tblsr:["lsr",-1],tbliq:["liqScore",-1],tbe:["ago",1],tbr:["rsi",-1]};
-const val=(o,k)=>k==="ago"?(o.cr?o.cr.ago:null):k==="ctype"?(o.cr?o.cr.type:null):o[k];
-function sortBy(arr,id){
-  const [k,d]=SRT[id];
-  return arr.slice().sort((a,b)=>{
-    const x=val(a,k),y=val(b,k);
-    if(x==null&&y==null)return b.dv-a.dv;
-    if(x==null)return 1;if(y==null)return -1;
-    if(typeof x==="string"||typeof y==="string")return d*String(x).localeCompare(String(y));
-    return x===y?b.dv-a.dv:d*(x-y);
-  });
+  busy["h"+src]=false;
 }
 
 // SCORE
-function score(o,mv){
+function score(o){
   let s=0;
-  if(o.v15!=null)s+=o.v15>=2*mv?2:o.v15>=mv?1:0;
-  if(o.v1!=null)s+=o.v1>=mv?2:o.v1>=mv/2?1:0;
-  if(o.v4!=null&&o.v4>=mv/2)s++;
-  if(o.v24!=null&&o.v24>=mv/2)s++;
+  if(o.r15!=null)s+=o.r15>=3?2:o.r15>=2?1:0;
+  if(o.r4 !=null)s+=o.r4 >=2?2:o.r4 >=1.5?1:0;
+  if(o.r24!=null)s+=o.r24>=1.5?2:o.r24>=1.3?1:0;
+  if(o.vs!=null&&o.vs>=3)s+=1;
   if(o.oiPct!=null){
     if(o.oiPct>=3)s+=2;
     else if(o.oiPct>=1)s+=1;
-    if(o.os>=3)s++;
+    if(o.os>=3)s+=1;
   }
-  if(o.oiZ!=null&&o.oiZ>=2)s++;
+  if(o.oiZ!=null&&o.oiZ>=2)s+=1;
   if(o.cvd!=null){
     if(o.cvd>5)s+=2;
     else if(o.cvd>2)s+=1;
@@ -596,70 +632,36 @@ function score(o,mv){
   o.pre=false;
 }
 
-function pumpStar(o,mv){
-  if(o.vs!=null&&o.vs>=3)return true;
-  if(o.v15!=null&&o.v4!=null&&o.v15>=mv&&o.v4>=mv/2)return true;
-  return false;
-}
-
-// LIQUIDATION RISK PROXY
-// Real liquidations are WebSocket-only. This estimates risk from OI + funding + price position.
-function liqRisk(o){
-  if(o.oi==null||o.price==null)return {score:0,dir:null};
-  let longRisk=0, shortRisk=0;
-  // Big OI = lots of positions that can get liquidated
-  const oiBig=o.oi>1e8?2:o.oi>2e7?1:0;
-  // Funding: positive = longs pay (crowded long), negative = shorts pay (crowded short)
-  if(o.fund!=null){
-    if(o.fund>0.05){longRisk+=2;shortRisk+=0}
-    else if(o.fund>0.02){longRisk+=1;shortRisk+=0}
-    else if(o.fund<-0.03){shortRisk+=2;longRisk+=0}
-    else if(o.fund<-0.01){shortRisk+=1;longRisk+=0}
-  }
-  // Price near 24h high = long liquidation zone above is thin
-  if(o.dHi!=null){
-    if(o.dHi>-2){longRisk+=2}
-    else if(o.dHi>-5){longRisk+=1}
-    // Price far below high = short liq zone (if shorts are underwater)
-    else if(o.dHi<-15){shortRisk+=1}
-  }
-  // Volatility increases liq risk
-  if(o.tight!=null&&o.tight>10){longRisk++;shortRisk++}
-  const total=longRisk+shortRisk+oiBig;
-  let dir=null;
-  if(longRisk>shortRisk)dir="longs at risk";
-  else if(shortRisk>longRisk)dir="shorts at risk";
-  return {score:total,dir};
-}
-
 function computePre(o){
-  const m15v=+$("m15").value||1.5,mm=+$("mm").value||3,m24v=+$("m24").value||8;
-  const mhiv=+$("mhi").value||-3,mtrv=+$("mtr").value||8;
-  const mo=+$("mo").value||1,mzv=+$("mz").value||1.5;
-  const mv=+$("mv").value||100;
-  if(!(o.v15>=mv||o.v1>=mv||o.os>=3))return;
+  const x15=+$("x15").value||2, x4=+$("x4").value||1.5, x24=+$("x24").value||1.3;
+  const m15v=+$("m15").value||1.5, mm=+$("mm").value||3, m24v=+$("m24").value||8;
+  const mo=+$("mo").value||1, mzv=+$("mz").value||1.5;
+  // ALL THREE abnormal volume gates must pass
+  if(!(o.r15!=null&&o.r15>=x15))return;
+  if(!(o.r4 !=null&&o.r4 >=x4 ))return;
+  if(!(o.r24!=null&&o.r24>=x24))return;
+  // price not moved yet
   if(o.p15!=null&&(o.p15>m15v||o.p15<-1))return;
   if(o.p1!=null&&(o.p1>mm||o.p1<-1.5))return;
-  if(o.p4!=null&&(o.p4>mm*2||o.p4<-3))return;
   if(o.p24!=null&&o.p24>m24v)return;
-  if(o.dHi!=null&&(o.dHi>mhiv||o.dHi<-30))return;
-  if(o.tight!=null&&o.tight>mtrv)return;
-  if(o.oiPct!=null&&(o.oiPct<mo))return;
-  if(o.oiZ!=null&&(o.oiZ<mzv))return;
+  if(o.oiPct!=null&&o.oiPct<mo)return;
+  if(o.oiZ!=null&&o.oiZ<mzv)return;
   o.pre=true;
 }
 
-// FORMATTERS
+function liqRisk(o){
+  if(o.oi==null||o.price==null)return {score:0,dir:null};
+  let longRisk=0, shortRisk=0;
+  if(o.oi>1e8)longRisk+=2; else if(o.oi>2e7)longRisk+=1;
+  if(o.fund!=null){
+    if(o.fund>0.05)longRisk+=2; else if(o.fund>0.02)longRisk+=1;
+    else if(o.fund<-0.03)shortRisk+=2; else if(o.fund<-0.01)shortRisk+=1;
+  }
+  return {score:longRisk+shortRisk,dir:longRisk>shortRisk?"longs at risk":shortRisk>longRisk?"shorts at risk":null};
+}
+
 const fm=v=>v==null||isNaN(v)?"-":v>=1e12?(v/1e12).toFixed(2)+"T":v>=1e9?(v/1e9).toFixed(2)+"B":v>=1e6?(v/1e6).toFixed(1)+"M":v>=1e3?(v/1e3).toFixed(0)+"K":v.toFixed(0);
 const fp=p=>p==null||isNaN(p)?"-":p>=100?p.toFixed(2):p>=1?p.toFixed(3):p>=0.01?p.toFixed(5):p.toPrecision(3);
-const dl=d=>d==null?"":(d>=0?"+":"-")+"$"+fm(Math.abs(d));
-const pct=(v,mv,d)=>{
-  if(v==null)return '<span class="mu">...</span>';
-  const c=v>=mv?"h":v>=mv/2?"w":v<0?"n":"";
-  return `<span class="v ${c}">${v>=0?"+":""}${Math.round(v)}%</span><div class="d">${dl(d)}</div>`;
-};
-const dHiCell=o=>o.dHi==null?'<span class="mu">...</span>':`<span class="${o.dHi>-3?"r":o.dHi<-30?"mu":"g"}">${o.dHi.toFixed(1)}%</span>`;
-const tightCell=o=>o.tight==null?'<span class="mu">...</span>':`<span class="${o.tight<4?"g":o.tight>10?"r":"mu"}">${o.tight.toFixed(1)}%</span>`;
 function link(o){
   if(o.bnSym)return "https://www.tradingview.com/chart/?symbol=BINANCE:"+o.bnSym+".P";
   if(o.bySym)return "https://www.tradingview.com/chart/?symbol=BYBIT:"+o.bySym+".P";
@@ -672,26 +674,36 @@ function scoreBar(s){
   return `<span class="sb">${h}</span> <b>${s}</b>`;
 }
 
+// Volume cell: shows % vs reset, and (+N) if volume is still rising
+function volCell(o,pct,rise){
+  if(pct==null)return '<span class="mu">...</span>';
+  const v=pct;
+  const cls=v>=100?"h":v>=30?"w":v<0?"n":"";
+  const riseTxt=(rise!=null&&rise>=3)?`<span class="rise">(+${rise})</span>`:"";
+  return `<span class="v ${cls}">${v>=0?"+":""}${Math.round(v)}%</span>${riseTxt}<div class="d">${o.r15!=null?"x"+o.r15.toFixed(2):""}</div>`;
+}
+
 function render(){
   lastR=Date.now();
   const vis=page==="wl"?"mkt":page;
-  const q=$("q").value.trim().toUpperCase(),mv=+$("mv").value||100,md=(+$("md").value||0)*1e6;
+  const q=$("q").value.trim().toUpperCase(),md=(+$("md").value||0)*1e6;
   const tfOn=$("ty").value==="all";
+
+  $("resetbar").innerHTML=resetLabel();
 
   const all=[...coins.values()].filter(o=>tfOn||!o.tf);
   all.forEach(o=>{
-    agg(o);score(o,mv);computePre(o);
-    o.pumping=pumpStar(o,mv);
+    agg(o);score(o);computePre(o);
+    o.pumping=(o.vs!=null&&o.vs>=3)||(o.r15!=null&&o.r4!=null&&o.r15>=2&&o.r4>=1.5);
     const lr=liqRisk(o);o.liqScore=lr.score;o.liqDir=lr.dir;
     if(o.pre&&!o.was&&alerts&&o.at&&Date.now()-(o.nt||0)>1800e3&&window.Notification&&Notification.permission==="granted"){
       o.nt=Date.now();
-      try{new Notification(o.base+" PRE-PUMP",{body:`Score ${o.score} | OI ${(o.oiPct??0).toFixed(1)}% | CVD ${(o.cvd??0).toFixed(1)} | Vol15 ${Math.round(o.v15??0)}%`})}catch(e){}
+      try{new Notification(o.base+" PRE-PUMP",{body:`15m x${(o.r15??0).toFixed(1)} | 4h x${(o.r4??0).toFixed(1)} | 24h x${(o.r24??0).toFixed(1)} | OI ${(o.oiPct??0).toFixed(1)}%`})}catch(e){}
     }
     o.was=o.pre;
   });
   logSignals(all);
 
-  // RADAR
   if(vis==="radar"){
     const radar=all.filter(o=>o.pre).sort((a,b)=>b.score-a.score||b.dv-a.dv).slice(0,60);
     $("tbradar").innerHTML=radar.map(o=>{
@@ -699,9 +711,9 @@ function render(){
       if(o.os>=3)flags.push('<span class="bd bd-oi">OI\u2191'+o.os+'</span>');
       if(o.cvd>2)flags.push('<span class="bd bd-cvd">CVD+</span>');
       if(o.lsr!=null&&o.lsr>2)flags.push('<span class="bd bd-lsr">LSR '+o.lsr.toFixed(1)+'</span>');
-      if(o.tight!=null&&o.tight<4)flags.push('<span class="bd bd-oi">TIGHT</span>');
       if(o.liqScore>=4)flags.push('<span class="bd bd-liq">LIQ\u26A0</span>');
       const star=o.pumping?'<span class="pump-star" title="Volume continues pumping">&#9733;</span>':'';
+      const vc=(pct,rise)=>(pct==null)?'<span class="mu">...</span>':`<span class="v ${pct>=100?"h":pct>=30?"w":"n"}">${pct>=0?"+":""}${Math.round(pct)}%${(rise!=null&&rise>=3)?`<span class="rise">(+${rise})</span>`:""}</span>`;
       return `<tr><td class="s ${wl.has(o.key)?"on":""}" data-s="${o.key}">&#9733;</td>
 <td><a href="#" data-c="${o.key}">${o.base}</a>${star}${o.tf?'<span class="tag" style="background:#7d8b99">STOCK</span>':""}</td>
 <td>${fp(o.price)}</td>
@@ -709,52 +721,60 @@ function render(){
 <td>${scoreBar(o.score)}</td>
 <td class="${o.oiPct>=1?"g":"mu"}">${o.oiPct==null?"...":(o.oiPct>=0?"+":"")+o.oiPct.toFixed(2)+"%"}${o.os!=null?" ("+o.os+"\u2191)":""}</td>
 <td class="${o.oiZ>=2?"g":o.oiZ>=1?"yl":"mu"}">${o.oiZ==null?"...":o.oiZ.toFixed(1)}</td>
-<td>${dHiCell(o)}</td><td>${tightCell(o)}</td>
-<td class="${o.p1>=0?"g":"r"}">${o.p1==null?"...":o.p1.toFixed(2)+"%"}</td>
-<td>${pct(o.v15,mv,o.dv15)}</td>
-<td>${pct(o.v4,mv,o.dv4)}</td>
-<td>${pct(o.v24,mv,o.dv24)}</td>
-<td>${o.vs!=null&&o.vs>=3?'<span class="g">'+o.vs+'\u2191</span>':'<span class="mu">'+(o.vs??'-')+'</span>'}</td>
+<td>${vc(o.v15,o.vs)}</td>
+<td>${vc(o.v4,null)}</td>
+<td>${vc(o.v24,null)}</td>
+<td>$${fm(o.dv7)}</td>
+<td>$${fm(o.dv30)}</td>
 <td>$${fm(o.dv)}</td>
 <td>${flags.join(" ")}</td>
 <td>${o.mcap?"$"+fm(o.mcap):'<span class="mu">-</span>'}</td></tr>`;
-    }).join("")||'<tr><td colspan="17" style="text-align:center;color:#7a8392;padding:20px">No pre-pump signals right now.<br><small>Signals build up over 5-15 minutes after page load.</small></td></tr>';
-    $("capradar").textContent=`Pre-pump candidates: ${radar.length}  |  Volume + OI + CVD + flat price + tight range  |  \u2605 next to a coin = volume is still expanding`;
+    }).join("")||'<tr><td colspan="15" style="text-align:center;color:#7a8392;padding:20px">No pre-pump signals right now.<br><small>Only coins where 15m, 4h and 24h volume all exceed the abnormal thresholds appear here.</small></td></tr>';
+    $("capradar").textContent=`Pre-pump candidates: ${radar.length}  |  15m AND 4h AND 24h volume all above threshold, price flat, OI rising  |  \u2605 next to a coin = volume is still expanding`;
     const done=SIGLOG.filter(s=>s.r1!=null);
     const w1=done.filter(s=>s.r1>0).length;
     const avg1=done.length?done.reduce((a,s)=>a+s.r1,0)/done.length:0;
-    const done4=SIGLOG.filter(s=>s.r4!=null);
-    const w4=done4.filter(s=>s.r4>0).length;
-    const avg4=done4.length?done4.reduce((a,s)=>a+s.r4,0)/done4.length:0;
-    $("logstat").innerHTML=`Signal log: <b>${SIGLOG.length}</b> logged &middot; 1h: <b>${done.length}</b> resolved (win ${done.length?(w1/done.length*100).toFixed(0):"-"}%, avg ${avg1.toFixed(2)}%) &middot; 4h: <b>${done4.length}</b> resolved (win ${done4.length?(w4/done4.length*100).toFixed(0):"-"}%, avg ${avg4.toFixed(2)}%)`;
+    $("logstat").innerHTML=`Signal log: <b>${SIGLOG.length}</b> logged &middot; 1h: <b>${done.length}</b> resolved (win ${done.length?(w1/done.length*100).toFixed(0):"-"}%, avg ${avg1.toFixed(2)}%)`;
   }
 
-  // LONGS / SHORTS
+  if(vis==="vol"){
+    const vl=all.filter(o=>o.dv>=md&&o.r15!=null).sort((a,b)=>(b.r15??0)-(a.r15??0)).slice(0,200);
+    $("tbv").innerHTML=vl.map(o=>{
+      const star=o.pumping?'<span class="pump-star">&#9733;</span>':'';
+      const vc=(pct,rise)=>(pct==null)?'<span class="mu">...</span>':`<span class="v ${pct>=100?"h":pct>=30?"w":"n"}">${pct>=0?"+":""}${Math.round(pct)}%${(rise!=null&&rise>=3)?`<span class="rise">(+${rise})</span>`:""}</span>`;
+      return `<tr><td class="s ${wl.has(o.key)?"on":""}" data-s="${o.key}">&#9733;</td>
+<td><a href="#" data-c="${o.key}">${o.base}</a>${star}</td>
+<td>${fp(o.price)}</td>
+<td class="${o.p24>=0?"g":"r"}">${o.p24==null?"-":o.p24.toFixed(2)+"%"}</td>
+<td>${vc(o.v15,o.vs)}</td><td>${vc(o.v4,null)}</td><td>${vc(o.v24,null)}</td>
+<td>$${fm(o.dv7)}</td><td>$${fm(o.dv30)}</td>
+<td class="${o.oiPct>=1?"g":"mu"}">${o.oiPct==null?"...":(o.oiPct>=0?"+":"")+o.oiPct.toFixed(1)+"%"}${o.os!=null?" ("+o.os+"\u2191)":""}</td>
+<td>$${fm(o.oi)}</td></tr>`;
+    }).join("")||'<tr><td colspan="11" style="text-align:center;color:#7a8392;padding:14px">Volume history is loading. Give it a few minutes.</td></tr>';
+    $("capv").textContent=`Volume vs the same-length window starting at the daily reset (7pm Winnipeg). (+N) = N rising candles in a row.`;
+  }
+
   if(vis==="lsr"){
     const ls=all.filter(o=>o.dv>=md&&o.longPct!=null).sort((a,b)=>b.lsr-a.lsr).slice(0,100);
     $("tblsr").innerHTML=ls.map(o=>{
       const star=o.pumping?'<span class="pump-star">&#9733;</span>':'';
-      const longC=o.longPct>70?'r':o.longPct<40?'g':'';
-      const shortC=o.shortPct>60?'g':o.shortPct<30?'r':'';
       const lw=Math.round(o.longPct);
       const bar=`<span class="long-bar"><span class="l" style="width:${lw}%"></span><span class="s" style="width:${100-lw}%"></span></span>`;
       return `<tr><td class="s ${wl.has(o.key)?"on":""}" data-s="${o.key}">&#9733;</td>
 <td><a href="#" data-c="${o.key}">${o.base}</a>${star}</td>
 <td>${fp(o.price)}</td>
 <td class="${o.p24>=0?"g":"r"}">${o.p24==null?"-":o.p24.toFixed(2)+"%"}</td>
-<td class="${longC}">${o.longPct.toFixed(1)}%</td>
-<td class="${shortC}">${o.shortPct.toFixed(1)}%</td>
-<td><b>${o.lsr.toFixed(2)}</b></td>
-<td>${bar}</td>
+<td class="${o.longPct>70?"r":o.longPct<40?"g":""}">${o.longPct.toFixed(1)}%</td>
+<td class="${o.shortPct>60?"g":o.shortPct<30?"r":""}">${o.shortPct.toFixed(1)}%</td>
+<td><b>${o.lsr.toFixed(2)}</b></td><td>${bar}</td>
 <td class="${o.oiPct>=1?"g":"mu"}">${o.oiPct==null?"...":(o.oiPct>=0?"+":"")+o.oiPct.toFixed(1)+"%"}${o.os!=null?" ("+o.os+"\u2191)":""}</td>
 <td>$${fm(o.dv)}</td></tr>`;
-    }).join("")||'<tr><td colspan="10" style="text-align:center;color:#7a8392;padding:16px">Long/short data fills in over a few minutes (Binance accounts only).</td></tr>';
-    $("caplsr").textContent=`Long vs short account ratio (Binance). L/S > 2.0 = crowded longs (contrarian risk). L/S < 0.5 = crowded shorts (squeeze fuel).`;
+    }).join("")||'<tr><td colspan="10" style="text-align:center;color:#7a8392;padding:16px">Long/short data fills in over a few minutes.</td></tr>';
+    $("caplsr").textContent=`Long vs short account ratio (Binance). L/S > 2.0 = crowded longs. L/S < 0.5 = crowded shorts.`;
   }
 
-  // LIQUIDATION RISK
   if(vis==="liq"){
-    const lq=all.filter(o=>o.dv>=md&&o.liqScore!=null).sort((a,b)=>b.liqScore-a.liqScore||b.dv-a.dv).slice(0,100);
+    const lq=all.filter(o=>o.dv>=md).sort((a,b)=>b.liqScore-a.liqScore||b.dv-a.dv).slice(0,100);
     $("tbliq").innerHTML=lq.map(o=>{
       const star=o.pumping?'<span class="pump-star">&#9733;</span>':'';
       const scC=o.liqScore>=5?'r':o.liqScore>=3?'yl':'mu';
@@ -767,13 +787,11 @@ function render(){
 <td class="${dirC}">${o.liqDir||"-"}</td>
 <td>$${fm(o.oi)}</td>
 <td class="${o.fund<-0.02?"g":o.fund>0.05?"r":"mu"}">${o.fund==null?"-":o.fund.toFixed(4)+"%"}${o.fund>0.05?" (longs pay)":o.fund<-0.02?" (shorts pay)":""}</td>
-<td>${dHiCell(o)}</td>
 <td>$${fm(o.dv)}</td></tr>`;
-    }).join("")||'<tr><td colspan="10" style="text-align:center;color:#7a8392;padding:16px">Liquidation risk estimates build over a few minutes.</td></tr>';
-    $("capliq").textContent=`Liquidation risk is ESTIMATED from OI size + funding extremes + price position vs 24h high. Real liquidation amounts require WebSocket streams (not available in a static HTML file).`;
+    }).join("")||'<tr><td colspan="9" style="text-align:center;color:#7a8392;padding:16px">Liquidation risk estimates build over a few minutes.</td></tr>';
+    $("capliq").textContent=`Liquidation risk is ESTIMATED from OI size + funding extremes. Real liquidation amounts require WebSocket streams.`;
   }
 
-  // FLOW
   if(vis==="flow"){
     const fl=all.filter(o=>o.dv>=md&&o.cvd!=null).sort((a,b)=>(b.cvd??-999)-(a.cvd??-999)).slice(0,100);
     $("tbflow").innerHTML=fl.map(o=>{
@@ -786,12 +804,11 @@ function render(){
 <td class="${o.cvd>2?"g":o.cvd<-2?"r":"mu"}">${o.cvd.toFixed(1)}%</td>
 <td class="${o.taker>52?"g":o.taker<48?"r":"mu"}">${o.taker==null?"...":o.taker.toFixed(1)+"%"}%</td>
 <td>${div}</td><td>${o.lsr==null?"-":o.lsr.toFixed(2)}</td>
-<td>${pct(o.v15,mv,o.d15)}</td><td>$${fm(o.dv)}</td></tr>`;
+<td>${o.v15==null?"...":(o.v15>=0?"+":"")+Math.round(o.v15)+"%"}</td><td>$${fm(o.dv)}</td></tr>`;
     }).join("")||'<tr><td colspan="10" style="text-align:center;color:#7a8392;padding:16px">Order flow fills in over a few minutes.</td></tr>';
-    $("capflow").textContent=`Order flow: CVD = (taker buys - taker sells) / total. Positive = aggressive buyers. Divergence = CVD disagrees with price.`;
+    $("capflow").textContent=`Order flow: CVD = (taker buys - taker sells) / total. Positive = aggressive buyers.`;
   }
 
-  // DERIV
   if(vis==="deriv"){
     const dl=all.filter(o=>o.dv>=md).sort((a,b)=>Math.abs(b.oiPct??0)-Math.abs(a.oiPct??0)).slice(0,100);
     $("tbderiv").innerHTML=dl.map(o=>{
@@ -808,43 +825,6 @@ function render(){
     $("capderiv").textContent=`OI Z-score: standard deviations of the latest OI move vs recent history. >2 = abnormal.`;
   }
 
-  // VOLUME
-  if(vis==="vol"){
-    const a10=(+$("a10").value||0)*1e6,a1h=(+$("a1h").value||0)*1e6,aoi=+$("aoi").value||0;
-    const f1=o=>o.q10!=null&&o.q10>=a10&&o.q1h>=a1h&&o.dv>=md;
-    const sg=v=>(v>=0?"+":"")+v.toFixed(2)+"%";
-    const vr=o=>{const star=o.pumping?'<span class="pump-star">&#9733;</span>':'';return`<tr><td class="s ${wl.has(o.key)?"on":""}" data-s="${o.key}">&#9733;</td><td><a href="#" data-c="${o.key}">${o.base}</a>${star}</td>
-<td>${fp(o.price)}</td><td class="${o.p24>=0?"g":"r"}">${o.p24==null?"-":sg(o.p24)}</td>
-<td class="${o.p1>=0?"g":"r"}">${o.p1==null?"...":sg(o.p1)}</td><td>${dHiCell(o)}</td><td>${tightCell(o)}</td>
-<td class="g">$${fm(o.q10)}</td><td class="g">$${fm(o.q1h)}</td>
-<td class="${o.oiPct>=aoi?"g":"mu"}">${o.oiPct==null?"...":sg(o.oiPct)}</td><td>$${fm(o.oi)}</td></tr>`};
-    const none='<tr><td colspan="11" style="text-align:center;color:#7a8392;padding:14px">None right now.</td></tr>';
-    const vl=sortBy(all.filter(f1),"tbv").slice(0,200);
-    $("tbv").innerHTML=vl.map(vr).join("")||none;
-    $("capv").textContent=`[10m Volume] >= $${fm(a10)} AND [1h Volume] >= $${fm(a1h)}   (${vl.length} coins)`;
-  }
-
-  // EMA
-  if(vis==="ema"){
-    const tfl=$("etf").value.toUpperCase(),cw=+$("ecw").value||6,rhi=+$("rhi").value||70,rlo=+$("rlo").value||30;
-    const sg=v=>(v>=0?"+":"")+v.toFixed(2)+"%";
-    const rc=v=>v==null?"-":`<span class="${v>=rhi?"r":v<=rlo?"g":""}">${v.toFixed(1)}</span>`;
-    const el=sortBy(all.filter(o=>o.e50!=null&&o.dv>=md&&o.cr&&o.cr.ago<cw&&(emaM==="both"||o.cr.type===emaM)),"tbe").slice(0,200);
-    $("tbe").innerHTML=el.map(o=>`<tr><td class="s ${wl.has(o.key)?"on":""}" data-s="${o.key}">&#9733;</td><td><a href="#" data-c="${o.key}">${o.base}</a></td><td>${fp(o.price)}</td><td class="${o.p24>=0?"g":"r"}">${o.p24==null?"-":sg(o.p24)}</td><td>${o.cr.type==="bull"?'<span class="v h">Bullish</span>':'<span class="v h" style="background:#fde8ea;color:#c0313e">Bearish</span>'}</td><td>${o.cr.ago===0?"latest":o.cr.ago+" ago"}</td><td>${fp(o.e50)}</td><td>${fp(o.e200)}</td><td class="${o.gap>=0?"g":"r"}">${sg(o.gap)}</td><td>${rc(o.rsi)}</td><td>$${fm(o.dv)}</td></tr>`).join("")||'<tr><td colspan="11" style="text-align:center;color:#7a8392;padding:14px">No crosses.</td></tr>';
-    $("cape").textContent=`EMA 50/200 crosses on ${tfl} candles, last ${cw} candles (${el.length} coins)`;
-  }
-
-  // RSI
-  if(vis==="rsi"){
-    const rhi=+$("rhi").value||70,rlo=+$("rlo").value||30;
-    const sg=v=>(v>=0?"+":"")+v.toFixed(2)+"%";
-    const rc=v=>v==null?"-":`<span class="${v>=rhi?"r":v<=rlo?"g":""}">${v.toFixed(1)}</span>`;
-    const rl=sortBy(all.filter(o=>o.rsi!=null&&o.dv>=md&&(rsiM==="all"||(rsiM==="ob"&&o.rsi>=rhi)||(rsiM==="os"&&o.rsi<=rlo))),"tbr").slice(0,300);
-    $("tbr").innerHTML=rl.map(o=>`<tr><td class="s ${wl.has(o.key)?"on":""}" data-s="${o.key}">&#9733;</td><td><a href="#" data-c="${o.key}">${o.base}</a></td><td>${fp(o.price)}</td><td class="${o.p24>=0?"g":"r"}">${o.p24==null?"-":sg(o.p24)}</td><td>${rc(o.rsi)}</td><td>${rc(o.rsip)}</td><td>${o.etr==="bull"?'<span class="g">EMA50>EMA200</span>':'<span class="r">EMA50<EMA200</span>'}</td><td>$${fm(o.dv)}</td></tr>`).join("")||'<tr><td colspan="8" style="text-align:center;color:#7a8392;padding:14px">Nothing yet.</td></tr>';
-    $("capr").textContent=`RSI (14) on ${$("etf").value.toUpperCase()}. OB >= ${rhi}, OS <= ${rlo} (${rl.length} coins)`;
-  }
-
-  // MARKETS
   if(vis==="mkt"){
     let arr=all.filter(o=>o.dv>=md&&(!q||o.base.includes(q))&&(page!=="wl"||wl.has(o.key)));
     arr.sort((a,b)=>{
@@ -859,14 +839,14 @@ function render(){
       return `<tr><td class="s ${st?"on":""}" data-s="${o.key}">&#9733;</td>
 <td><a href="#" data-c="${o.key}">${o.base}</a>${star}${o.tf?'<span class="tag" style="background:#7d8b99">STOCK</span>':""}${o.pre?'<span class="tag">PRE-PUMP</span>':""}</td>
 <td>${fp(o.price)}</td><td class="${o.p24>=0?"g":"r"}">${o.p24==null?"-":o.p24.toFixed(2)+"%"}</td>
-<td>${pct(o.v15,mv,o.d15)}</td><td>${pct(o.v1,mv,o.d1)}</td><td>${pct(o.v4,mv,o.d4)}</td><td>${pct(o.v24,mv,o.d24)}</td>
+<td>${o.v15==null?"...":(o.v15>=0?"+":"")+Math.round(o.v15)+"%"}${(o.vs!=null&&o.vs>=3)?`<span class="rise">(+${o.vs})</span>`:""}</td>
+<td>${o.v4==null?"...":(o.v4>=0?"+":"")+Math.round(o.v4)+"%"}</td>
+<td>${o.v24==null?"...":(o.v24>=0?"+":"")+Math.round(o.v24)+"%"}</td>
 <td class="${o.oiPct>=1?"g":"mu"}">${o.oiPct==null?"...":(o.oiPct>=0?"+":"")+o.oiPct.toFixed(1)+"%"}</td>
 <td>$${fm(o.dv)}</td><td>$${fm(o.oi)}</td>
 <td><span class="sc ${sc}">${o.at?o.score:"-"}</span></td></tr>`;
-    }).join("")||'<tr><td colspan="12" style="text-align:center;color:#7a8392;padding:16px">Nothing here yet.</td></tr>';
+    }).join("")||'<tr><td colspan="11" style="text-align:center;color:#7a8392;padding:16px">Nothing here yet.</td></tr>';
   }
-
-  for(const id in SRT){const t=$(id);if(!t)continue;const tbl=t.closest("table");if(!tbl)continue;tbl.querySelectorAll("th[data-sk]").forEach(h=>{const on=h.dataset.sk===SRT[id][0];h.classList.toggle("asc",on&&SRT[id][1]>0);h.classList.toggle("desc",on&&SRT[id][1]<0)})}
 }
 
 document.querySelectorAll("th[data-k]").forEach(th=>th.onclick=()=>{
@@ -878,13 +858,8 @@ document.querySelectorAll("#pages button").forEach(b=>b.onclick=()=>{
   document.querySelectorAll(".pg").forEach(x=>x.classList.toggle("on",x.id==="pg-"+(page==="wl"?"mkt":page)));
   render();
 });
-function seg(id,fn){$(id).onclick=e=>{const m=e.target.dataset&&e.target.dataset.m;if(!m)return;[...$(id).children].forEach(b=>b.classList.toggle("on",b===e.target));fn(m);render()}}
-seg("segE",m=>emaM=m);
-seg("segR",m=>{rsiM=m;SRT.tbr=["rsi",m==="os"?1:-1]});
-$("etf").onchange=()=>{coins.forEach(o=>{o.ea=0;o.e50=null;o.cr=null;o.rsi=null;o.rsip=null});render()};
 document.body.onclick=e=>{
   const d=e.target.dataset||{};
-  if(d.sk){const id=e.target.closest("table").querySelector("tbody").id,c=SRT[id];if(c){SRT[id]=[d.sk,c[0]===d.sk?-c[1]:(["base","ctype","etr"].includes(d.sk)?1:-1)];render();return}}
   if(d.c&&coins.get(d.c)){e.preventDefault();window.open(link(coins.get(d.c)),"_blank","noopener");return}
   const n=d.s;if(!n)return;
   wl.has(n)?wl.delete(n):wl.add(n);saveWl();render();
@@ -901,7 +876,6 @@ ntfBtn.onclick=async()=>{
   if(!window.Notification){alert("Notifications not supported.");return}
   const p=await Notification.requestPermission();
   alerts=p==="granted";refreshNtf();
-  if(alerts)try{new Notification("Pre-Pump Radar",{body:"You'll be pinged when a coin passes all filters."})}catch(e){}
 };
 
 async function tickBtc(){
@@ -921,15 +895,12 @@ async function tickBtc(){
   tickBtc();
   left=+$("ri").value;
   render();
-  setInterval(()=>tick("bn"),300);
-  setInterval(()=>tick("by"),300);
-  setInterval(()=>tick("hl"),1500);
+  // main light schedulers
+  setInterval(()=>tickHist("bn"),400);
+  setInterval(()=>tickHist("by"),400);
+  setInterval(()=>tickHist("hl"),1500);
   setInterval(tickOi,600);
-  setInterval(()=>tick1("bn"),300);
-  setInterval(()=>tick1("by"),300);
-  setInterval(()=>tickE("bn"),400);
-  setInterval(()=>tickE("by"),400);
-  setInterval(()=>tickFlow("bn"),500);
+  setInterval(()=>tickFlow("bn"),800);
   setInterval(tickBtc,45000);
   setInterval(loadMcap,300000);
   setInterval(()=>{
