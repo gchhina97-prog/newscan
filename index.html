@@ -3,8 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#50d2c1">
+<meta name="theme-color" content="#ffffff">
 <title>Volume Signal - Multi-Exchange Screener</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#0b0f14;--card:#131a22;--line:#1e2833;--tx:#e4eaf0;--mu:#7d8b99;--ac:#50d2c1;--gr:#2ecc71;--rd:#ef5350}
 *{box-sizing:border-box}
@@ -43,25 +45,69 @@ a{color:var(--tx);text-decoration:none;font-weight:700}
 .tag{background:var(--ac);color:#000;border-radius:4px;padding:1px 5px;font-size:10px;font-weight:700;margin-left:4px}
 .d{font-size:11px;color:var(--mu);margin-top:2px}
 .sec{font-size:15px;margin:14px 0 6px;color:var(--ac)}
+.chart{background:var(--card);border-radius:8px;margin-bottom:8px;overflow:hidden}
+.ch{display:flex;gap:8px;align-items:center;padding:6px 8px;flex-wrap:wrap}
+.ch .sp{flex:1}.ch button{padding:4px 9px}
+#tv{height:340px}
+.pg{display:none}.pg.on{display:block}
+.cap{color:var(--mu);font-size:12px;margin:6px 0}
+details.fl{margin-bottom:8px}details.fl summary{cursor:pointer;color:var(--ac);padding:4px 0;font-weight:600}
+.seg{display:flex;gap:6px;margin:6px 0;flex-wrap:wrap}
 .ex{color:var(--mu);font-size:11px;letter-spacing:1px}
 .note{color:var(--mu);font-size:11px;line-height:1.5;margin-top:10px}
+/* ---- light theme (Velo-style) ---- */
+:root{--bg:#fff;--card:#f6f7f9;--line:#e7e9ee;--tx:#14171c;--mu:#7a8392;--ac:#14171c;--gr:#119a57;--rd:#e0404d}
+body{font-family:"Outfit",system-ui,-apple-system,sans-serif;font-size:13px}
+h1{font-size:24px;font-weight:700;letter-spacing:-.5px;text-transform:lowercase}
+h1 span{font-size:12px;font-weight:400;color:var(--mu);letter-spacing:0;margin-left:8px}
+button{background:#eef0f3;color:var(--tx);font-weight:500;border-radius:6px;font-family:inherit}
+button.on{background:#14171c;color:#fff;font-weight:600}
+select,input{background:#fff;border:1px solid #d9dce3;border-radius:6px;font-family:inherit}
+.bar,.chart{background:#fff;border:1px solid var(--line)}
+.src b{background:#f1f3f6;color:var(--tx)}
+table{background:#fff;border:1px solid var(--line)}
+th{background:#fff;color:var(--mu);font-size:11px}
+tbody tr:hover{background:#f6f7f9}
+td.s{color:#c5cad3}td.s.on{color:#f5a524}
+a{font-weight:600}
+.v.w{color:var(--gr)}
+.v.h{background:#e2f6ea;color:#0d7a44;font-weight:700}
+.v.n{color:var(--rd)}
+.sc{background:#eef0f3;color:var(--tx)}
+.sc.m{background:#fff1cc;color:#8a5a00}
+.sc.h{background:#e2f6ea;color:#0d7a44}
+.tag{background:#e2f6ea;color:#0d7a44}
+.tag[style]{color:#fff}
+#pg{background:#eef0f3}
+details.fl summary,.sec{color:var(--tx)}
+#tv{background:#fff}
+.foot{margin-top:14px;border-top:1px solid var(--line);padding-top:8px}
+body{padding-top:6px}
+#tv{height:min(58vh,480px)}
 </style>
 </head>
 <body>
-<div class="top">
-  <h1>VOLUME SIGNAL<span>Hyperliquid + Binance + Bybit + OKX combined</span></h1>
-  <div class="sp"></div>
-  <div class="stat" id="st">Loading markets...</div>
-  <button id="nt">Alerts off</button>
-</div>
-<div class="src" id="src"></div>
 
-<div class="bar">
+
+<div class="chart">
+  <div class="ch"><b id="ct">BTCUSDT</b><span class="sp"></span><span id="ivs"></span></div>
+  <div id="tv"></div>
+</div>
+<script src="https://s3.tradingview.com/tv.js"></script>
+<div class="tabs" id="pages"><button data-p="vol" class="on">Volume</button><button data-p="pre">Pre-pump</button><button data-p="ema">EMA 50/200</button><button data-p="rsi">RSI</button><button data-p="rise">Rising</button><button data-p="mkt">Markets</button><button data-p="wl">&#9733; Watchlist</button></div>
+<details class="fl"><summary>Filters</summary><div class="bar">
   <label>Search<input id="q" placeholder="BTC"></label>
   <label>Market<select id="ty" style="width:125px"><option value="crypto">Crypto only</option><option value="all">Crypto + stocks</option></select></label>
   <label>Auto refresh<select id="ri"><option value="15">15s</option><option value="30" selected>30s</option><option value="60">60s</option></select></label>
   <label>Volume spike % (min)<input id="mv" type="number" value="100" min="10" step="10"></label>
   <label>Max 1h price move %<input id="mm" type="number" value="3" min="0" step="0.5"></label>
+  <label>10m volume &ge; ($M)<input id="a10" type="number" value="1" min="0" step="0.5"></label>
+  <label>1h volume &ge; ($M)<input id="a1h" type="number" value="5" min="0" step="0.5"></label>
+  <label>1h OI change &ge; (%)<input id="aoi" type="number" value="0.1" min="0" step="0.05"></label>
+  <label>EMA/RSI timeframe<select id="etf" style="width:80px"><option value="1h">1h</option><option value="4h" selected>4h</option><option value="1d">1d</option></select></label>
+  <label>EMA cross within (candles)<input id="ecw" type="number" value="6" min="1" step="1"></label>
+  <label>RSI overbought &ge;<input id="rhi" type="number" value="70"></label>
+  <label>RSI oversold &le;<input id="rlo" type="number" value="30"></label>
   <label>Show coins where<select id="rm" style="width:150px"><option value="either">Volume OR OI</option><option value="vol">Volume only</option><option value="oi">OI only</option><option value="both">Volume AND OI</option></select></label>
   <label>Price filter<select id="ep" style="width:150px"><option value="early">Before pump only</option><option value="all">Show all</option></select></label>
   <label>Max 15m move %<input id="m15" type="number" value="1.5" min="0.1" step="0.1"></label>
@@ -72,18 +118,27 @@ a{color:var(--tx);text-decoration:none;font-weight:700}
   <button id="rf">Refresh now</button>
 </div>
 
-<h2 class="sec">Volume or Open Interest rising (keeps increasing)</h2>
+</details>
+<div class="pg on" id="pg-vol"><div class="cap" id="capv"></div><div class="wrap"><table style="min-width:900px">
+<thead><tr><th></th><th>Coin</th><th>Exch</th><th>Price</th><th>24h %</th><th>1h price</th><th>10m volume</th><th>1h volume</th><th>1h OI chg</th><th>Open interest</th><th>Funding %/8h</th></tr></thead>
+<tbody id="tbv"></tbody></table></div></div>
+<div class="pg" id="pg-pre"><div class="cap" id="capp"></div><div class="wrap"><table style="min-width:900px">
+<thead><tr><th></th><th>Coin</th><th>Exch</th><th>Price</th><th>24h %</th><th>1h price</th><th>10m volume</th><th>1h volume</th><th>1h OI chg</th><th>Open interest</th><th>Funding %/8h</th></tr></thead>
+<tbody id="tbp"></tbody></table></div></div>
+<div class="pg" id="pg-ema"><div class="cap" id="cape"></div>
+<div class="seg" id="segE"><button data-m="both" class="on">All crosses</button><button data-m="bull">Bullish (50 over 200)</button><button data-m="bear">Bearish (50 under 200)</button></div>
+<div class="wrap"><table style="min-width:900px"><thead><tr><th></th><th>Coin</th><th>Exch</th><th>Price</th><th>24h %</th><th>Cross</th><th>When</th><th>EMA 50</th><th>EMA 200</th><th>Gap %</th><th>RSI</th><th>24h volume</th></tr></thead><tbody id="tbe"></tbody></table></div></div>
+<div class="pg" id="pg-rsi"><div class="cap" id="capr"></div>
+<div class="seg" id="segR"><button data-m="all" class="on">All</button><button data-m="ob">Overbought</button><button data-m="os">Oversold</button></div>
+<div class="wrap"><table style="min-width:800px"><thead><tr><th></th><th>Coin</th><th>Exch</th><th>Price</th><th>24h %</th><th>RSI (14)</th><th>Previous RSI</th><th>EMA trend</th><th>24h volume</th></tr></thead><tbody id="tbr"></tbody></table></div></div>
+<div class="pg" id="pg-rise"><h2 class="sec">Volume or Open Interest rising (keeps increasing)</h2>
 <div class="wrap"><table style="min-width:900px">
 <thead><tr><th>Coin</th><th>Exch</th><th>Price</th><th>24h %</th><th>Price move 15m / 1h / 4h</th><th>15m volume increase</th><th>Last 15m vol</th><th>Vol 1h</th><th>OI change (1h)</th><th>OI total</th><th>Funding %/8h</th><th>Signal</th></tr></thead>
 <tbody id="tb2"></tbody>
 </table></div>
 
-<div class="tabs" style="margin-top:14px">
-  <button data-t="all" class="on">All markets</button>
-  <button data-t="pre">Pre-pump</button>
-  <button data-t="wl">Watchlist</button>
 </div>
-<div id="pg"><div id="pgb"></div></div>
+<div class="pg" id="pg-mkt"><div id="pg"><div id="pgb"></div></div>
 
 <div class="wrap"><table>
 <thead><tr>
@@ -94,7 +149,14 @@ a{color:var(--tx);text-decoration:none;font-weight:700}
 <tbody id="tb"></tbody>
 </table></div>
 
-<div class="note">
+</div>
+<div class="foot"><div class="top">
+  <div class="sp"></div>
+  <div class="stat" id="st">Loading markets...</div>
+  <button id="nt">Alerts off</button>
+</div>
+<div class="src" id="src"></div></div>
+<div class="note">EMA 50/200 page: coins where EMA 50 crossed above EMA 200 (bullish) or below it (bearish) within the last few closed candles (4h by default, change under Filters). RSI page: RSI(14) on the same timeframe, with overbought/oversold buttons. Both pages use Binance/Bybit coins and need a few minutes to load candle history.<br>Pages: Volume = [10m Volume] and [1h Volume] above your minimums (default $1M and $5M, rolling dollar volume like Velo). Pre-pump = the same plus [1h OI Chg] above your minimum (default 0.1%) and, by default, price not pumped yet. Rising and Markets are the earlier screens. Volume and Pre-pump use Binance/Bybit coins. Tap a coin to load its chart on top.<br>
 Before-pump filter (default on): the top section hides coins that already moved, so price must be within your max 15m move (default 1.5%), your max 1h move, 2x that over 4h, under your max 24h move, and funding not crowded (above 0.05%/8h). Top section: shows coins where the latest 15m volume is above normal by at least your minimum dollar amount (default $5M) OR open interest is up 3 checks in a row (15m steps, last hour, above your minimum rise). Coins with both are listed first and tagged BOTH. The dropdown lets you pick: Volume only (volume rising, ignore OI), OI only (OI rising, ignore volume), Volume OR OI, or Volume AND OI. OI history comes from Binance/Bybit coins only. Stocks, ETFs and commodity perps are hidden by default (Crypto only). Combined data: 24h volume is the sum across exchanges, open interest is the sum of Hyperliquid + Bybit + OKX, funding is the average (approx. per 8h). Exch letters: H Hyperliquid, B Binance, Y Bybit, O OKX.<br>
 Under each % is the extra dollar volume: latest window volume minus the normal (average) volume, e.g. +$5.2M. Vol % = latest closed window vs the average of earlier windows of the same size (15m vs previous 20 candles, 1h vs previous 24h, 4h vs previous 6 windows, 24h vs the 24h before). +200% means 3x normal. Candles come from Binance first, then Bybit, then Hyperliquid, so the columns fill in over a minute or two (Hyperliquid-only coins are slower).<br>
 Pre-pump = big volume spike while the 1h price move is still small. Signal (0 to 7) adds up spikes across timeframes. It finds unusual activity and cannot predict pumps. Use a stop-loss. Not financial advice.
@@ -105,7 +167,7 @@ const HLA="https://api.hyperliquid.xyz/info",BF="https://fapi.binance.com/fapi/v
 const $=id=>document.getElementById(id);
 const coins=new Map(),status={},hold={},busy={};
 const LET={hl:"H",bn:"B",by:"Y",ok:"O"},NAME={hl:"Hyperliquid",bn:"Binance",by:"Bybit",ok:"OKX"};
-let tab="all",sk="score",sd=-1,left=0,alerts=false;
+let emaM="both",rsiM="all",page="vol",tab="all",sk="score",sd=-1,left=0,alerts=false;
 let wl=new Set();
 try{wl=new Set(JSON.parse(localStorage.getItem("wl")||"[]"))}catch(e){}
 const saveWl=()=>{try{localStorage.setItem("wl",JSON.stringify([...wl]))}catch(e){}};
@@ -234,7 +296,8 @@ async function tickOi(){
     if(o.tf||!(o.src==="bn"||o.src==="by")||o.dv<(+$("md").value||0)*1e6)continue;
     const age=now-(o.oat||0);
     if(o.oat&&age<90000)continue;
-    const sc=o.oat?age*(o.d15>=(+$("dv15").value||0)*1e6?3:1):1e12+o.dv;
+    const hot=o.q1h>=(+$("a1h").value||0)*1e6;
+    const sc=o.oat?age*(hot||o.d15>=(+$("dv15").value||0)*1e6?3:1):1e12+o.dv+(hot?1e13:0);
     if(sc>bs){bs=sc;best=o}
   }
   if(!best)return;
@@ -242,6 +305,72 @@ async function tickOi(){
   try{setOi(best,await ofn[best.src](best));best.oat=Date.now()}
   catch(e){if(String(e.message)==="429")hold.oi=Date.now()+30000;else best.oat=Date.now()}
   busy.oi=false;
+}
+const m1f={
+  bn:async o=>(await get(`${BF}/klines?symbol=${o.bnSym}&interval=1m&limit=60`)).map(x=>({q:+x[7]})),
+  by:async o=>(await get(`${BYA}/kline?category=linear&symbol=${o.bySym}&interval=1&limit=60`)).result.list.slice().reverse().map(x=>({q:+x[6]}))
+};
+function calc1(o,k){
+  if(k.length<10)return;
+  const sm=m=>k.slice(-m).reduce((a,x)=>a+x.q,0);
+  o.q10=sm(10);o.q1h=sm(60);
+}
+async function tick1(src){
+  const k1="m"+src;
+  if(busy[k1]||Date.now()<(hold[k1]||0))return;
+  const md=(+$("md").value||0)*1e6,now=Date.now(),tfOn=$("ty").value==="all",a1=(+$("a1h").value||0)*1e6;let best=null,bs=-1;
+  for(const o of coins.values()){
+    if(o.src!==src||o.dv<md||(o.tf&&!tfOn))continue;
+    const age=now-(o.a1||0);
+    if(o.a1&&age<20000)continue;
+    const sc=o.a1?age*(o.q1h>=a1?4:1):1e12+o.dv;
+    if(sc>bs){bs=sc;best=o}
+  }
+  if(!best)return;
+  busy[k1]=true;
+  try{calc1(best,await m1f[src](best));best.a1=Date.now()}
+  catch(e){if(String(e.message)==="429")hold[k1]=Date.now()+20000;else best.a1=Date.now()}
+  busy[k1]=false;
+}
+const TFM={"1h":["1h","60"],"4h":["4h","240"],"1d":["1d","D"]};
+const ef={
+  bn:async o=>(await get(`${BF}/klines?symbol=${o.bnSym}&interval=${TFM[$("etf").value][0]}&limit=499`)).map(x=>+x[4]),
+  by:async o=>(await get(`${BYA}/kline?category=linear&symbol=${o.bySym}&interval=${TFM[$("etf").value][1]}&limit=500`)).result.list.slice().reverse().map(x=>+x[4])
+};
+function ema(c,p){const k=2/(p+1),r=[c[0]];for(let i=1;i<c.length;i++)r.push(c[i]*k+r[i-1]*(1-k));return r}
+// EMA 50/200 cross + RSI(14) on closed candles
+function calcE(o,c){
+  c=c.slice(0,-1);const n=c.length;if(n<260)return;
+  const a=ema(c,50),b=ema(c,200);let cr=null;
+  for(let i=n-1;i>=Math.max(201,n-80);i--){
+    const u=a[i]>b[i];
+    if(u!==(a[i-1]>b[i-1])){cr={type:u?"bull":"bear",ago:n-1-i};break}
+  }
+  o.e50=a[n-1];o.e200=b[n-1];o.gap=(a[n-1]/b[n-1]-1)*100;o.cr=cr;o.etr=a[n-1]>b[n-1]?"bull":"bear";
+  let g=0,l=0,pr=null,rs=null;
+  for(let i=1;i<n;i++){
+    const d=c[i]-c[i-1],u=d>0?d:0,w=d<0?-d:0;
+    if(i<=14){g+=u;l+=w;if(i===14){g/=14;l/=14;rs=l===0?100:100-100/(1+g/l)}}
+    else{g=(g*13+u)/14;l=(l*13+w)/14;pr=rs;rs=l===0?100:100-100/(1+g/l)}
+  }
+  o.rsi=rs;o.rsip=pr;
+}
+async function tickE(src){
+  const k="e"+src;
+  if(busy[k]||Date.now()<(hold[k]||0))return;
+  const md=(+$("md").value||0)*1e6,now=Date.now(),tfOn=$("ty").value==="all";let best=null,bs=-1;
+  for(const o of coins.values()){
+    if(o.src!==src||o.dv<md||(o.tf&&!tfOn))continue;
+    const age=now-(o.ea||0);
+    if(o.ea&&age<300000)continue;
+    const sc=o.ea?age:1e12+o.dv;
+    if(sc>bs){bs=sc;best=o}
+  }
+  if(!best)return;
+  busy[k]=true;
+  try{calcE(best,await ef[src](best));best.ea=Date.now()}
+  catch(e){if(String(e.message)==="429")hold[k]=Date.now()+30000;else best.ea=Date.now()}
+  busy[k]=false;
 }
 const cf={
   bn:async o=>(await get(`${BF}/klines?symbol=${o.bnSym}&interval=15m&limit=195`)).map(x=>({o:+x[1],c:+x[4],q:+x[7]})),
@@ -310,7 +439,7 @@ function render(){
     }
     o.was=o.pre;
   });
-  let arr=all.filter(o=>o.dv>=md&&(!q||o.base.includes(q))&&(tab==="all"||(tab==="pre"&&o.pre)||(tab==="wl"&&wl.has(o.key))));
+  let arr=all.filter(o=>o.dv>=md&&(!q||o.base.includes(q))&&(page!=="wl"||wl.has(o.key)));
   arr.sort((a,b)=>{
     const x=a[sk],y=b[sk];
     if(sk==="base")return sd*(x<y?-1:1);
@@ -321,7 +450,7 @@ function render(){
     const sc=o.score>=5?"h":o.score>=3?"m":"",st=wl.has(o.key);
     const ex=Object.keys(o.ex).map(k=>LET[k]).join(" ");
     return `<tr><td class="s ${st?"on":""}" data-s="${o.key}">&#9733;</td>
-<td><a target="_blank" rel="noopener" href="${link(o)}">${o.base}</a>${o.tf?'<span class="tag" style="background:#7d8b99">STOCK/COMMODITY</span>':""}${o.pre?'<span class="tag">PRE-PUMP</span>':""}</td>
+<td><a href="#" data-c="${o.key}">${o.base}</a>${o.tf?'<span class="tag" style="background:#7d8b99">STOCK/COMMODITY</span>':""}${o.pre?'<span class="tag">PRE-PUMP</span>':""}</td>
 <td class="ex">${ex}</td><td>${fp(o.price)}</td><td class="${o.p24>=0?"g":"r"}">${o.p24==null?"-":o.p24.toFixed(2)+"%"}</td>
 <td>${pct(o.v15,mv,o.d15)}</td><td>${pct(o.v1,mv,o.d1)}</td><td>${pct(o.v4,mv,o.d4)}</td><td>${pct(o.v24,mv,o.d24)}</td>
 <td>$${fm(o.dv)}</td><td>$${fm(o.oi)}</td><td>${o.fund==null?"-":o.fund.toFixed(4)}</td>
@@ -338,13 +467,36 @@ function render(){
     .sort((a,b)=>((oOk(b)&&vOk(b))-(oOk(a)&&vOk(a)))||b.score-a.score||b.dv-a.dv).slice(0,40);
   $("tb2").innerHTML=rise.map(o=>{
     const v=vOk(o),oi=oOk(o),ty=v&&oi?"BOTH":v?"VOLUME":"OI";
-    return `<tr><td><a target="_blank" rel="noopener" href="${link(o)}">${o.base}</a><span class="tag">${ty}</span></td>
+    return `<tr><td><a href="#" data-c="${o.key}">${o.base}</a><span class="tag">${ty}</span></td>
 <td class="ex">${Object.keys(o.ex).map(k=>LET[k]).join(" ")}</td><td>${fp(o.price)}</td><td class="${o.p24>=0?"g":"r"}">${o.p24==null?"-":o.p24.toFixed(2)+"%"}</td>
 <td class="mu">${o.p1==null?"...":(o.p15==null?"-":o.p15.toFixed(1))+"% / "+o.p1.toFixed(1)+"% / "+(o.p4==null?"-":o.p4.toFixed(1)+"%")}</td>
 <td class="${v?"g":"mu"}">${o.d15==null?"...":dl(o.d15)}</td><td>$${fm(o.lq)}</td><td>${pct(o.v1,mv,o.d1)}</td>
 <td class="${oi?"g":"mu"}">${o.oiPct==null||!fresh(o)?"...":(o.oiPct>=0?"+":"")+o.oiPct.toFixed(2)+"%"} <span class="mu">${o.os!=null&&fresh(o)?"("+o.os+" rises)":""}</span></td>
 <td>$${fm(o.oi)}</td><td>${o.fund==null?"-":o.fund.toFixed(4)}</td>
 <td><span class="sc ${o.score>=5?"h":o.score>=3?"m":""}">${o.score}</span></td></tr>`}).join("")||'<tr><td colspan="12" style="text-align:center;color:#7d8b99;padding:14px">None right now. Volume signal = latest 15m volume is above normal by your minimum dollar amount. OI rising = 3 checks in a row (15m steps). Fills in a few minutes after opening the page.</td></tr>';
+  const a10=(+$("a10").value||0)*1e6,a1h=(+$("a1h").value||0)*1e6,aoi=+$("aoi").value||0;
+  const f1=o=>o.q10!=null&&o.q10>=a10&&o.q1h>=a1h&&o.dv>=md;
+  const f2=o=>f1(o)&&o.oiPct!=null&&fresh(o)&&o.oiPct>=aoi&&(!early||isEarly(o));
+  const sg=v=>(v>=0?"+":"")+v.toFixed(2)+"%";
+  const vr=o=>`<tr><td class="s ${wl.has(o.key)?"on":""}" data-s="${o.key}">&#9733;</td><td><a href="#" data-c="${o.key}">${o.base}</a>${o.tf?'<span class="tag" style="background:#7d8b99">STOCK</span>':""}</td>
+<td class="ex">${Object.keys(o.ex).map(k=>LET[k]).join(" ")}</td><td>${fp(o.price)}</td><td class="${o.p24>=0?"g":"r"}">${o.p24==null?"-":sg(o.p24)}</td>
+<td class="${o.p1>=0?"g":"r"}">${o.p1==null?"...":sg(o.p1)}</td><td class="g">$${fm(o.q10)}</td><td class="g">$${fm(o.q1h)}</td>
+<td class="${o.oiPct>=aoi?"g":"mu"}">${o.oiPct==null||!fresh(o)?"...":sg(o.oiPct)}</td><td>$${fm(o.oi)}</td><td>${o.fund==null?"-":o.fund.toFixed(4)}</td></tr>`;
+  const none='<tr><td colspan="11" style="text-align:center;color:#7d8b99;padding:14px">None right now. Data fills in over a minute or two.</td></tr>';
+  const vl=all.filter(f1).sort((a,b)=>b.q1h-a.q1h).slice(0,60),pl=all.filter(f2).sort((a,b)=>b.q1h-a.q1h).slice(0,60);
+  $("tbv").innerHTML=vl.map(vr).join("")||none;
+  $("tbp").innerHTML=pl.map(vr).join("")||none;
+  $("capv").textContent=`[10m Volume] >= $${fm(a10)} AND [1h Volume] >= $${fm(a1h)}   (${vl.length} coins)`;
+  $("capp").textContent=`[10m Volume] >= $${fm(a10)} AND [1h Volume] >= $${fm(a1h)} AND [1h OI Chg] >= ${aoi}%`+(early?" AND price not pumped yet":"")+`   (${pl.length} coins)`;
+  const tfl=$("etf").value.toUpperCase(),cw=+$("ecw").value||6,rhi=+$("rhi").value||70,rlo=+$("rlo").value||30;
+  const bc=o=>`<td class="s ${wl.has(o.key)?"on":""}" data-s="${o.key}">&#9733;</td><td><a href="#" data-c="${o.key}">${o.base}</a></td><td class="ex">${Object.keys(o.ex).map(k=>LET[k]).join(" ")}</td><td>${fp(o.price)}</td><td class="${o.p24>=0?"g":"r"}">${o.p24==null?"-":sg(o.p24)}</td>`;
+  const rc=v=>v==null?"-":`<span class="${v>=rhi?"r":v<=rlo?"g":""}">${v.toFixed(1)}</span>`;
+  const el=all.filter(o=>o.e50!=null&&o.dv>=md&&o.cr&&o.cr.ago<cw&&(emaM==="both"||o.cr.type===emaM)).sort((a,b)=>a.cr.ago-b.cr.ago||b.dv-a.dv).slice(0,80);
+  $("tbe").innerHTML=el.map(o=>`<tr>${bc(o)}<td>${o.cr.type==="bull"?'<span class="v h">Bullish</span>':'<span class="v h" style="background:#fde8ea;color:#c0313e">Bearish</span>'}</td><td>${o.cr.ago===0?"latest candle":o.cr.ago+" candles ago"}</td><td>${fp(o.e50)}</td><td>${fp(o.e200)}</td><td class="${o.gap>=0?"g":"r"}">${sg(o.gap)}</td><td>${rc(o.rsi)}</td><td>$${fm(o.dv)}</td></tr>`).join("")||'<tr><td colspan="12" style="text-align:center;color:#7d8b99;padding:14px">No crosses in this window. Candle data loads over a few minutes.</td></tr>';
+  $("cape").textContent=`EMA 50 crossing EMA 200 on ${tfl} candles, within the last ${cw} candles   (${el.length} coins)`;
+  const rl=all.filter(o=>o.rsi!=null&&o.dv>=md&&(rsiM==="all"||(rsiM==="ob"&&o.rsi>=rhi)||(rsiM==="os"&&o.rsi<=rlo))).sort((a,b)=>rsiM==="os"?a.rsi-b.rsi:b.rsi-a.rsi).slice(0,150);
+  $("tbr").innerHTML=rl.map(o=>`<tr>${bc(o)}<td>${rc(o.rsi)}</td><td>${rc(o.rsip)}</td><td>${o.etr==="bull"?'<span class="g">EMA50 above EMA200</span>':'<span class="r">EMA50 below EMA200</span>'}</td><td>$${fm(o.dv)}</td></tr>`).join("")||'<tr><td colspan="9" style="text-align:center;color:#7d8b99;padding:14px">Nothing here yet. Candle data loads over a few minutes.</td></tr>';
+  $("capr").textContent=`RSI (14) on ${tfl} candles. Overbought >= ${rhi}, oversold <= ${rlo}   (${rl.length} coins)`;
   $("pgb").style.width=(elig?loaded/elig*100:0)+"%";
   $("st").textContent=`${elig} coins | volume data ${loaded}/${elig} | ${all.filter(o=>o.pre&&o.dv>=md).length} pre-pump | refresh in ${left}s`;
   $("src").innerHTML="Sources: "+Object.keys(NAME).map(k=>{
@@ -355,14 +507,37 @@ function render(){
 document.querySelectorAll("th[data-k]").forEach(th=>th.onclick=()=>{
   const k=th.dataset.k;sd=k===sk?-sd:(k==="base"?1:-1);sk=k;render();
 });
-document.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>{
-  tab=b.dataset.t;document.querySelectorAll(".tabs button").forEach(x=>x.classList.toggle("on",x===b));render();
+document.querySelectorAll("#pages button").forEach(b=>b.onclick=()=>{
+  page=b.dataset.p;
+  document.querySelectorAll("#pages button").forEach(x=>x.classList.toggle("on",x===b));
+  document.querySelectorAll(".pg").forEach(x=>x.classList.toggle("on",x.id==="pg-"+(page==="wl"?"mkt":page)));
+  render();
 });
-$("tb").onclick=e=>{
-  const n=e.target.dataset&&e.target.dataset.s;if(!n)return;
+// chart on top (TradingView)
+let cs="BINANCE:BTCUSDT.P",ci="15";
+function drawChart(){
+  if(!window.TradingView)return;
+  $("tv").innerHTML="";
+  new TradingView.widget({container_id:"tv",symbol:cs,interval:ci,theme:"light",style:"1",locale:"en",autosize:true,allow_symbol_change:false,save_image:false,backgroundColor:"#ffffff"});
+}
+function setChart(o){
+  cs=o.bnSym?"BINANCE:"+o.bnSym+".P":o.bySym?"BYBIT:"+o.bySym+".P":"BINANCE:"+o.base+"USDT.P";
+  $("ct").textContent=o.base;drawChart();
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+$("ivs").innerHTML=[["1","1m"],["5","5m"],["15","15m"],["60","1h"],["240","4h"],["D","D"]].map(x=>`<button data-i="${x[0]}" class="${x[0]===ci?"on":""}">${x[1]}</button>`).join(" ");
+$("ivs").onclick=e=>{const i=e.target.dataset&&e.target.dataset.i;if(!i)return;ci=i;[...$("ivs").children].forEach(x=>x.classList.toggle("on",x.dataset.i===i));drawChart()};
+window.addEventListener("load",drawChart);
+function seg(id,fn){$(id).onclick=e=>{const m=e.target.dataset&&e.target.dataset.m;if(!m)return;[...$(id).children].forEach(b=>b.classList.toggle("on",b===e.target));fn(m);render()}}
+seg("segE",m=>emaM=m);seg("segR",m=>rsiM=m);
+$("etf").onchange=()=>{coins.forEach(o=>{o.ea=0;o.e50=null;o.cr=null;o.rsi=null;o.rsip=null});render()};
+document.body.onclick=e=>{
+  const d=e.target.dataset||{};
+  if(d.c&&coins.get(d.c)){e.preventDefault();setChart(coins.get(d.c));return}
+  const n=d.s;if(!n)return;
   wl.has(n)?wl.delete(n):wl.add(n);saveWl();render();
 };
-["q","mv","mm","md","ty","mo","rm","dv15","ep","m24","m15"].forEach(id=>$(id).oninput=render);
+["q","mv","mm","md","ty","mo","rm","dv15","ep","m24","m15","a10","a1h","aoi","ecw","rhi","rlo"].forEach(id=>$(id).oninput=render);
 $("rf").onclick=()=>{left=+$("ri").value;loadAll().then(render)};
 $("nt").onclick=async()=>{
   if(!window.Notification){alert("Notifications not supported in this browser.");return}
@@ -377,6 +552,10 @@ $("nt").onclick=async()=>{
   setInterval(()=>tick("by"),300);
   setInterval(()=>tick("hl"),1500);
   setInterval(tickOi,600);
+  setInterval(()=>tick1("bn"),300);
+  setInterval(()=>tick1("by"),300);
+  setInterval(()=>tickE("bn"),400);
+  setInterval(()=>tickE("by"),400);
   setInterval(()=>{
     left--;
     if(left<=0){left=+$("ri").value;loadAll()}
