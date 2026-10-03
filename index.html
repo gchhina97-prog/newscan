@@ -56,6 +56,9 @@ details.fl{margin-bottom:8px}details.fl summary{cursor:pointer;color:var(--ac);p
 th.asc::after{content:" \25B2"}th.desc::after{content:" \25BC"}
 .cl{display:flex;align-items:center;gap:4px;font-size:11px;color:var(--mu)}
 .cl input{width:26px;height:22px;padding:0;border:0;background:none;cursor:pointer}
+.tvw{position:relative}
+.cd{position:absolute;left:12px;top:8px;z-index:3;font-size:12px;font-weight:600;pointer-events:none;font-variant-numeric:tabular-nums;line-height:1.5}
+.cd .dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:5px;vertical-align:middle}
 .ex{color:var(--mu);font-size:11px;letter-spacing:1px}
 .note{color:var(--mu);font-size:11px;line-height:1.5;margin-top:10px}
 /* ---- light theme (Velo-style) ---- */
@@ -95,7 +98,7 @@ body{padding-top:6px}
 <div class="chart">
   <div class="ch"><b id="ct">BTC</b><span id="ivs"></span><span class="sp"></span>
     <label class="cl">EMA 50<input type="color" id="k_c50"></label><label class="cl">EMA 200<input type="color" id="k_c200"></label><label class="cl">Up<input type="color" id="k_up"></label><label class="cl">Down<input type="color" id="k_dn"></label><button id="thm">Dark chart</button></div>
-  <div id="tv"></div>
+  <div class="tvw"><div id="tv"></div><div id="cd" class="cd"></div></div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/lightweight-charts@4.2.0/dist/lightweight-charts.standalone.production.js"></script>
 <div class="tabs" id="pages"><button data-p="vol" class="on">Volume</button><button data-p="pre">Pre-pump</button><button data-p="ema">EMA 50/200</button><button data-p="rsi">RSI</button><button data-p="rise">Rising</button><button data-p="mkt">Markets</button><button data-p="wl">&#9733; Watchlist</button></div>
@@ -555,14 +558,17 @@ function initChart(){
   s200=ch.addLineSeries({color:cp.c200,lineWidth:2,priceLineVisible:false,lastValueVisible:false});
   loadChart(true);
 }
+let loadTk=0,isLive=false,ws=null,wsKey=0;
 async function loadChart(reset){
   if(!ch)return;
+  const tk=++loadTk;
+  if(reset)lastK=null;
   try{
     const [bi,yi,ms]=IV[ci];let k;
     if(cur.bnSym)k=(await get(`${BF}/klines?symbol=${cur.bnSym}&interval=${bi}&limit=1000`)).map(x=>({t:Math.floor(x[0]/1e3),o:+x[1],h:+x[2],l:+x[3],c:+x[4],v:+x[5]}));
     else if(cur.bySym)k=(await get(`${BYA}/kline?category=linear&symbol=${cur.bySym}&interval=${yi}&limit=1000`)).result.list.slice().reverse().map(x=>({t:Math.floor(+x[0]/1e3),o:+x[1],h:+x[2],l:+x[3],c:+x[4],v:+x[5]}));
     else{const e=Date.now();k=(await hlPost({type:"candleSnapshot",req:{coin:cur.hlName,interval:bi,startTime:e-1000*ms,endTime:e}})).map(x=>({t:Math.floor(x.t/1e3),o:+x.o,h:+x.h,l:+x.l,c:+x.c,v:+x.v}))}
-    if(!k.length)return;
+    if(tk!==loadTk||!k.length)return;
     lastK=k;
     const rg=reset?null:ch.timeScale().getVisibleLogicalRange();
     sC.setData(k.map(x=>({time:x.t,open:x.o,high:x.h,low:x.l,close:x.c})));
@@ -570,8 +576,51 @@ async function loadChart(reset){
     s50.setData(k.flatMap((x,i)=>i>=50?[{time:x.t,value:e50[i]}]:[]));
     s200.setData(k.flatMap((x,i)=>i>=200?[{time:x.t,value:e200[i]}]:[]));
     if(rg)ch.timeScale().setVisibleLogicalRange(rg);
-    else ch.timeScale().setVisibleLogicalRange({from:k.length-120,to:k.length+5});
+    else ch.timeScale().setVisibleLogicalRange({from:k.length-120,to:k.length+6});
+    paintCd();
   }catch(e){}
+  if(reset&&tk===loadTk)openWs();
+}
+// live updates: exchange WebSocket pushes every trade-driven candle update
+function closeWs(){wsKey++;isLive=false;if(ws){clearInterval(ws._p);try{ws.close()}catch(e){}ws=null}}
+function openWs(){
+  closeWs();const my=wsKey,[bi,yi]=IV[ci];
+  let url,sub=null,ping=null,parse;
+  if(cur.bnSym){
+    url=`wss://fstream.binance.com/ws/${cur.bnSym.toLowerCase()}@kline_${bi}`;
+    parse=m=>m.k&&{t:Math.floor(m.k.t/1e3),o:+m.k.o,h:+m.k.h,l:+m.k.l,c:+m.k.c,v:+m.k.v};
+  }else if(cur.bySym){
+    url="wss://stream.bybit.com/v5/public/linear";sub={op:"subscribe",args:[`kline.${yi}.${cur.bySym}`]};ping={op:"ping"};
+    parse=m=>m.topic&&m.data&&m.data[0]&&{t:Math.floor(+m.data[0].start/1e3),o:+m.data[0].open,h:+m.data[0].high,l:+m.data[0].low,c:+m.data[0].close,v:+m.data[0].volume};
+  }else{
+    url="wss://api.hyperliquid.xyz/ws";sub={method:"subscribe",subscription:{type:"candle",coin:cur.hlName,interval:bi}};ping={method:"ping"};
+    parse=m=>m.channel==="candle"&&m.data&&{t:Math.floor(m.data.t/1e3),o:+m.data.o,h:+m.data.h,l:+m.data.l,c:+m.data.c,v:+m.data.v};
+  }
+  let w;try{w=new WebSocket(url)}catch(e){return}
+  ws=w;
+  w.onopen=()=>{if(my!==wsKey)return;if(sub)w.send(JSON.stringify(sub));if(ping)w._p=setInterval(()=>{if(w.readyState===1)w.send(JSON.stringify(ping))},20000);isLive=true;paintCd()};
+  w.onmessage=ev=>{if(my!==wsKey)return;try{const c=parse(JSON.parse(ev.data));if(c)tickChart(c)}catch(e){}};
+  w.onclose=()=>{clearInterval(w._p);if(my===wsKey){isLive=false;paintCd();setTimeout(()=>{if(my===wsKey)openWs()},3000)}};
+  w.onerror=()=>{try{w.close()}catch(e){}};
+}
+function tickChart(c){
+  if(!lastK||!lastK.length||!sC)return;
+  const L=lastK[lastK.length-1];
+  if(c.t===L.t)lastK[lastK.length-1]=c;else if(c.t>L.t)lastK.push(c);else return;
+  sC.update({time:c.t,open:c.o,high:c.h,low:c.l,close:c.c});
+  const cl=lastK.map(x=>x.c),n=cl.length;
+  if(n>50)s50.update({time:c.t,value:ema(cl,50)[n-1]});
+  if(n>200)s200.update({time:c.t,value:ema(cl,200)[n-1]});
+  paintCd();
+}
+// live price + countdown to candle close
+const pad2=n=>String(n).padStart(2,"0");
+function fmtLeft(sec){sec=Math.max(0,Math.floor(sec));const h=Math.floor(sec/3600),m=Math.floor(sec%3600/60);return(h?h+":":"")+pad2(m)+":"+pad2(sec%60)}
+function paintCd(){
+  const el=$("cd");if(!el)return;
+  if(!lastK||!lastK.length){el.textContent="";return}
+  const L=lastK[lastK.length-1],left=L.t+IV[ci][2]/1e3-Date.now()/1e3;
+  el.innerHTML=`<span class="dot" style="background:${isLive?"#119a57":"#9aa4ad"}"></span>${cur.base} ${ci} &nbsp;${fp(L.c)}<br>closes in ${fmtLeft(left)}${isLive?"":" (reconnecting...)"}`;
 }
 function applyCp(){
   $("thm").textContent=cp.theme==="light"?"Dark chart":"Light chart";
@@ -588,7 +637,9 @@ $("ivs").onclick=e=>{const i=e.target.dataset&&e.target.dataset.i;if(!i)return;c
 ["c50","c200","up","dn"].forEach(id=>$("k_"+id).oninput=e=>{cp[id]=e.target.value;saveCp();applyCp()});
 $("thm").onclick=()=>{cp.theme=cp.theme==="light"?"dark":"light";Object.assign(cp,pre(cp.theme));saveCp();applyCp()};
 window.addEventListener("load",()=>{initChart();applyCp()});
-setInterval(()=>loadChart(false),20000);
+setInterval(paintCd,1000);
+setInterval(()=>loadChart(false),120000);
+setInterval(()=>{if(!isLive)loadChart(false)},5000);
 function seg(id,fn){$(id).onclick=e=>{const m=e.target.dataset&&e.target.dataset.m;if(!m)return;[...$(id).children].forEach(b=>b.classList.toggle("on",b===e.target));fn(m);render()}}
 seg("segE",m=>emaM=m);seg("segR",m=>{rsiM=m;SRT.tbr=["rsi",m==="os"?1:-1]});
 $("etf").onchange=()=>{coins.forEach(o=>{o.ea=0;o.e50=null;o.cr=null;o.rsi=null;o.rsip=null});render()};
