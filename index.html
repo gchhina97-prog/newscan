@@ -4,169 +4,177 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#ffffff">
-<title>Volume Signal - Multi-Exchange Screener</title>
+<title>Pre-Pump Radar — Multi-Signal Scanner</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#0b0f14;--card:#131a22;--line:#1e2833;--tx:#e4eaf0;--mu:#7d8b99;--ac:#50d2c1;--gr:#2ecc71;--rd:#ef5350}
+:root{--bg:#fff;--card:#f6f7f9;--line:#e7e9ee;--tx:#14171c;--mu:#7a8392;--gr:#119a57;--rd:#e0404d;--yl:#f5a524}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--tx);font:13px system-ui,sans-serif;padding:10px}
-h1{font-size:17px;margin:0;color:var(--ac);letter-spacing:.5px}
-h1 span{color:var(--tx);font-weight:400;font-size:12px;margin-left:6px}
+body{margin:0;background:var(--bg);color:var(--tx);font:13px "Outfit",system-ui,-apple-system,sans-serif;padding:10px;padding-top:6px}
+h1{font-size:24px;font-weight:700;letter-spacing:-.5px;margin:0}
+h1 span{font-size:12px;font-weight:400;color:var(--mu);margin-left:8px}
 .top{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:6px}
 .top .sp{flex:1}
-.stat{color:var(--mu);font-size:12px}
-.src{margin-bottom:8px;font-size:11px;color:var(--mu)}
-.src b{display:inline-block;background:var(--card);border-radius:4px;padding:2px 7px;margin-right:5px;color:var(--tx)}
-.src b.ok{border-left:3px solid var(--gr)}.src b.err{border-left:3px solid var(--rd)}
-.bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;background:var(--card);padding:8px;border-radius:8px;margin-bottom:8px}
+.src{margin-bottom:6px;font-size:11px;color:var(--mu)}
+.src b{display:inline-block;background:#f1f3f6;border-radius:4px;padding:2px 7px;margin-right:5px;color:var(--tx);border-left:3px solid transparent}
+.src b.ok{border-left-color:var(--gr)}.src b.err{border-left-color:var(--rd)}
+#btc{margin-bottom:8px;font-size:12px}
+.bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;background:#fff;border:1px solid var(--line);padding:8px;border-radius:8px;margin-bottom:8px}
 .bar label{display:flex;flex-direction:column;font-size:10px;color:var(--mu);gap:2px}
-select,input{background:var(--bg);color:var(--tx);border:1px solid var(--line);border-radius:5px;padding:5px;width:80px}
+select,input{background:#fff;color:var(--tx);border:1px solid #d9dce3;border-radius:6px;padding:5px;width:80px;font-family:inherit}
 input#q{width:100px}
-button{background:var(--line);color:var(--tx);border:0;border-radius:5px;padding:7px 11px;cursor:pointer;font-size:12px}
-button.on{background:var(--ac);color:#000;font-weight:700}
+button{background:#eef0f3;color:var(--tx);border:0;border-radius:6px;padding:7px 11px;cursor:pointer;font-size:12px;font-weight:500;font-family:inherit}
+button.on{background:#14171c;color:#fff;font-weight:600}
 .tabs{display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap}
-#pg{height:3px;background:var(--line);border-radius:2px;margin-bottom:8px}
-#pgb{height:100%;width:0;background:var(--ac);border-radius:2px;transition:width .4s}
+#pg{height:3px;background:#eef0f3;border-radius:2px;margin-bottom:8px}
+#pgb{height:100%;width:0;background:#14171c;border-radius:2px;transition:width .4s}
 .wrap{overflow-x:auto;border-radius:8px}
-table{border-collapse:collapse;width:100%;min-width:980px;background:var(--card)}
+table{border-collapse:collapse;width:100%;min-width:980px;background:#fff;border:1px solid var(--line)}
 th,td{padding:7px 9px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap}
-th{color:var(--mu);font-size:10px;font-weight:600;cursor:pointer;position:sticky;top:0;background:var(--card)}
+th{color:var(--mu);font-size:10px;font-weight:600;cursor:pointer;position:sticky;top:0;background:#fff}
 th:nth-child(-n+3),td:nth-child(-n+3){text-align:left}
-td.s{cursor:pointer;color:#3a4653;width:24px;padding-right:0}
-td.s.on{color:#f5c518}
-a{color:var(--tx);text-decoration:none;font-weight:700}
-.g{color:var(--gr)}.r{color:var(--rd)}.mu{color:var(--mu)}
+td.s{cursor:pointer;color:#c5cad3;width:24px;padding-right:0}
+td.s.on{color:var(--yl)}
+a{color:var(--tx);text-decoration:none;font-weight:600}
+.g{color:var(--gr)}.r{color:var(--rd)}.mu{color:var(--mu)}.yl{color:var(--yl)}
 .v{font-weight:600}
-.v.w{color:#9be7b4}.v.h{color:#000;background:var(--gr);border-radius:4px;padding:2px 5px}
+.v.w{color:var(--gr)}.v.h{background:#e2f6ea;color:#0d7a44;font-weight:700;border-radius:4px;padding:2px 5px}
 .v.n{color:var(--rd);font-weight:400}
-.sc{display:inline-block;min-width:22px;text-align:center;border-radius:4px;padding:2px 5px;font-weight:700;background:var(--line)}
-.sc.m{background:#f5c518;color:#000}.sc.h{background:var(--gr);color:#000}
-.tag{background:var(--ac);color:#000;border-radius:4px;padding:1px 5px;font-size:10px;font-weight:700;margin-left:4px}
+.sc{display:inline-block;min-width:22px;text-align:center;border-radius:4px;padding:2px 5px;font-weight:700;background:#eef0f3}
+.sc.m{background:#fff1cc;color:#8a5a00}.sc.h{background:#e2f6ea;color:#0d7a44}
+.tag{background:#e2f6ea;color:#0d7a44;border-radius:4px;padding:1px 5px;font-size:10px;font-weight:700;margin-left:4px}
+.tag.rd{background:#fde8ea;color:#c0313e}
 .d{font-size:11px;color:var(--mu);margin-top:2px}
-.sec{font-size:15px;margin:14px 0 6px;color:var(--ac)}
-.chart{background:var(--card);border-radius:8px;margin-bottom:8px;overflow:hidden}
-.ch{display:flex;gap:8px;align-items:center;padding:6px 8px;flex-wrap:wrap}
-.ch .sp{flex:1}.ch button{padding:4px 9px}
-#tv{height:340px}
+.sec{font-size:15px;margin:14px 0 6px;color:var(--tx)}
 .pg{display:none}.pg.on{display:block}
 .cap{color:var(--mu);font-size:12px;margin:6px 0}
-details.fl{margin-bottom:8px}details.fl summary{cursor:pointer;color:var(--ac);padding:4px 0;font-weight:600}
+details.fl{margin-bottom:8px}details.fl summary{cursor:pointer;color:var(--tx);padding:4px 0;font-weight:600}
 .seg{display:flex;gap:6px;margin:6px 0;flex-wrap:wrap}
 th.asc::after{content:" \25B2"}th.desc::after{content:" \25BC"}
-.cl{display:flex;align-items:center;gap:4px;font-size:11px;color:var(--mu)}
-.cl input{width:26px;height:22px;padding:0;border:0;background:none;cursor:pointer}
-.tvw{position:relative}
-.cd{position:absolute;left:12px;top:8px;z-index:3;font-size:12px;font-weight:600;pointer-events:none;font-variant-numeric:tabular-nums;line-height:1.5}
-.cd .dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:5px;vertical-align:middle}
-#tvx{height:min(62vh,520px)}
-.cd.r{left:auto;right:76px}
 .ex{color:var(--mu);font-size:11px;letter-spacing:1px}
-.note{color:var(--mu);font-size:11px;line-height:1.5;margin-top:10px}
-#btc{margin-bottom:8px;font-size:12px}
-#src{margin-bottom:6px}
 .hit{font-size:11px;color:var(--mu);margin:4px 0 8px}
 .hit b{color:var(--tx)}
-/* ---- light theme (Velo-style) ---- */
-:root{--bg:#fff;--card:#f6f7f9;--line:#e7e9ee;--tx:#14171c;--mu:#7a8392;--ac:#14171c;--gr:#119a57;--rd:#e0404d}
-body{font-family:"Outfit",system-ui,-apple-system,sans-serif;font-size:13px}
-h1{font-size:24px;font-weight:700;letter-spacing:-.5px;text-transform:lowercase}
-h1 span{font-size:12px;font-weight:400;color:var(--mu);letter-spacing:0;margin-left:8px}
-button{background:#eef0f3;color:var(--tx);font-weight:500;border-radius:6px;font-family:inherit}
-button.on{background:#14171c;color:#fff;font-weight:600}
-select,input{background:#fff;border:1px solid #d9dce3;border-radius:6px;font-family:inherit}
-.bar,.chart{background:#fff;border:1px solid var(--line)}
-.src b{background:#f1f3f6;color:var(--tx)}
-table{background:#fff;border:1px solid var(--line)}
-th{background:#fff;color:var(--mu);font-size:11px}
-tbody tr:hover{background:#f6f7f9}
-td.s{color:#c5cad3}td.s.on{color:#f5a524}
-a{font-weight:600}
-.v.w{color:var(--gr)}
-.v.h{background:#e2f6ea;color:#0d7a44;font-weight:700}
-.v.n{color:var(--rd)}
-.sc{background:#eef0f3;color:var(--tx)}
-.sc.m{background:#fff1cc;color:#8a5a00}
-.sc.h{background:#e2f6ea;color:#0d7a44}
-.tag{background:#e2f6ea;color:#0d7a44}
-.tag[style]{color:#fff}
-#pg{background:#eef0f3}
-details.fl summary,.sec{color:var(--tx)}
-#tv{background:#fff}
-.foot{margin-top:14px;border-top:1px solid var(--line);padding-top:8px}
-body{padding-top:6px}
-#tv{height:min(58vh,480px)}
+/* Signal badges */
+.bd{display:inline-block;font-size:9px;font-weight:700;border-radius:3px;padding:1px 4px;margin:0 1px;vertical-align:middle}
+.bd-oi{background:#e8f0fe;color:#1a56db}
+.bd-cvd{background:#f3e8ff;color:#7c3aed}
+.bd-fund{background:#fff1cc;color:#8a5a00}
+.bd-liq{background:#fde8ea;color:#c0313e}
+.bd-lsr{background:#e2f6ea;color:#0d7a44}
+/* Score bar */
+.sb{display:inline-flex;align-items:center;gap:2px}
+.sb i{display:block;width:4px;border-radius:1px;background:#eef0f3}
+.sb i.f{background:var(--gr)}
+.sb i.f.m{background:var(--yl)}
+.sb i.f.h{background:var(--gr)}
 </style>
 </head>
 <body>
 
-<div class="tabs" id="pages">
-  <button data-p="vol" class="on">Volume</button>
-  <button data-p="pre">Pre-pump</button>
-  <button data-p="ema">EMA 50/200</button>
-  <button data-p="rsi">RSI</button>
-  <button data-p="rise">Rising</button>
-  <button data-p="mkt">Markets</button>
-  <button data-p="wl">&#9733; Watchlist</button>
+<div class="top">
+  <h1>pre-pump radar<span>multi-signal · coinglass-grade</span></h1>
+  <div class="sp"></div>
+  <button id="ntf">&#128276; Alerts off</button>
 </div>
 
 <div class="src" id="src"></div>
 <div id="btc"></div>
 
-<details class="fl"><summary>Filters</summary><div class="bar">
+<details class="fl" open><summary>Filters</summary><div class="bar">
   <label>Search<input id="q" placeholder="BTC"></label>
   <label>Market<select id="ty" style="width:125px"><option value="crypto">Crypto only</option><option value="all">Crypto + stocks</option></select></label>
-  <label>Auto refresh<select id="ri"><option value="15">15s</option><option value="30" selected>30s</option><option value="60">60s</option></select></label>
-  <label>Volume spike % (min)<input id="mv" type="number" value="100" min="10" step="10"></label>
-  <label>Max 1h price move %<input id="mm" type="number" value="3" min="0" step="0.5"></label>
-  <label>10m volume &ge; ($M)<input id="a10" type="number" value="1" min="0" step="0.5"></label>
-  <label>1h volume &ge; ($M)<input id="a1h" type="number" value="5" min="0" step="0.5"></label>
-  <label>1h OI change &ge; (%)<input id="aoi" type="number" value="0.1" min="0" step="0.05"></label>
-  <label>EMA/RSI timeframe<select id="etf" style="width:80px"><option value="1h">1h</option><option value="4h" selected>4h</option><option value="1d">1d</option></select></label>
-  <label>EMA cross within (candles)<input id="ecw" type="number" value="6" min="1" step="1"></label>
-  <label>RSI overbought &ge;<input id="rhi" type="number" value="70"></label>
-  <label>RSI oversold &le;<input id="rlo" type="number" value="30"></label>
-  <label>Show coins where<select id="rm" style="width:150px"><option value="either">Volume OR OI</option><option value="vol">Volume only</option><option value="oi">OI only</option><option value="both">Volume AND OI</option></select></label>
-  <label>Price filter<select id="ep" style="width:150px"><option value="early">Before pump only</option><option value="all">Show all</option></select></label>
-  <label>Max 15m move %<input id="m15" type="number" value="1.5" min="0.1" step="0.1"></label>
-  <label>Max 24h move %<input id="m24" type="number" value="8" min="1" step="1"></label>
-  <label>Min 15m volume increase ($M)<input id="dv15" type="number" value="5" min="0" step="0.5"></label>
-  <label>Min OI rise % (1h)<input id="mo" type="number" value="1" min="0" step="0.5"></label>
-  <label>Min 24h volume ($M)<input id="md" type="number" value="1" min="0" step="0.5"></label>
+  <label>Refresh<select id="ri"><option value="30" selected>30s</option><option value="60">60s</option><option value="120">2min</option></select></label>
+  <label>Min 24h vol ($M)<input id="md" type="number" value="2" min="0" step="0.5"></label>
+  <label>Min 15m vol ($M)<input id="dv15" type="number" value="5" min="0" step="0.5"></label>
+  <label>Min 1h vol ($M)<input id="a1h" type="number" value="10" min="0" step="0.5"></label>
+  <label>Vol spike % (min)<input id="mv" type="number" value="100" min="10" step="10"></label>
+  <label>Max 1h price %<input id="mm" type="number" value="3" min="0" step="0.5"></label>
+  <label>Max 15m price %<input id="m15" type="number" value="1.5" min="0.1" step="0.1"></label>
+  <label>Max 24h price %<input id="m24" type="number" value="8" min="1" step="1"></label>
+  <label>OI rise % 1h (min)<input id="mo" type="number" value="1" min="0" step="0.5"></label>
+  <label>OI Z-score (min)<input id="mz" type="number" value="1.5" min="0" step="0.5"></label>
+  <label>Max funding %/8h<input id="mf" type="number" value="0.05" min="-0.5" step="0.01"></label>
+  <label>Max off 24h high %<input id="mhi" type="number" value="-3" step="1"></label>
+  <label>Max 2h range %<input id="mtr" type="number" value="8" min="1" step="1"></label>
+  <label>EMA/RSI TF<select id="etf" style="width:70px"><option value="1h">1h</option><option value="4h" selected>4h</option><option value="1d">1d</option></select></label>
+  <label>EMA cross within<input id="ecw" type="number" value="6" min="1" step="1"></label>
+  <label>RSI OB<input id="rhi" type="number" value="70"></label>
+  <label>RSI OS<input id="rlo" type="number" value="30"></label>
   <button id="rf">Refresh now</button>
-  <button id="ntf">&#128276; Alerts</button>
 </div>
 </details>
 
-<div class="pg on" id="pg-vol"><div class="cap" id="capv"></div><div class="wrap"><table style="min-width:1000px">
-<thead><tr><th></th><th data-sk="base">Coin</th><th data-sk="n">Exch</th><th data-sk="price">Price</th><th data-sk="p24">24h %</th><th data-sk="p1">1h price</th><th data-sk="dHi">Off 24h high</th><th data-sk="tight">2h range</th><th data-sk="q10">10m volume</th><th data-sk="q1h">1h volume</th><th data-sk="oiPct">1h OI chg</th><th data-sk="oi">Open interest</th><th data-sk="fund">Funding %/8h</th></tr></thead>
-<tbody id="tbv"></tbody></table></div></div>
-
-<div class="pg" id="pg-pre"><div class="cap" id="capp"></div><div class="hit" id="logstat"></div><div class="wrap"><table style="min-width:1100px">
-<thead><tr><th></th><th data-sk="base">Coin</th><th data-sk="n">Exch</th><th data-sk="price">Price</th><th data-sk="p24">24h %</th><th data-sk="p1">1h price</th><th data-sk="dHi">Off 24h high</th><th data-sk="tight">2h range</th><th data-sk="q10">10m volume</th><th data-sk="q1h">1h volume</th><th data-sk="oiPct">1h OI chg</th><th data-sk="oi">Open interest</th><th data-sk="fund">Funding %/8h</th></tr></thead>
-<tbody id="tbp"></tbody></table></div></div>
-
-<div class="pg" id="pg-ema"><div class="cap" id="cape"></div>
-<div class="seg" id="segE"><button data-m="both" class="on">All crosses</button><button data-m="bull">Bullish (50 over 200)</button><button data-m="bear">Bearish (50 under 200)</button></div>
-<div class="wrap"><table style="min-width:900px"><thead><tr><th></th><th data-sk="base">Coin</th><th data-sk="n">Exch</th><th data-sk="price">Price</th><th data-sk="p24">24h %</th><th data-sk="ctype">Cross</th><th data-sk="ago">When</th><th data-sk="e50">EMA 50</th><th data-sk="e200">EMA 200</th><th data-sk="gap">Gap %</th><th data-sk="rsi">RSI</th><th data-sk="dv">24h volume</th></tr></thead><tbody id="tbe"></tbody></table></div></div>
-
-<div class="pg" id="pg-rsi"><div class="cap" id="capr"></div>
-<div class="seg" id="segR"><button data-m="all" class="on">All</button><button data-m="ob">Overbought</button><button data-m="os">Oversold</button></div>
-<div class="wrap"><table style="min-width:800px"><thead><tr><th></th><th data-sk="base">Coin</th><th data-sk="n">Exch</th><th data-sk="price">Price</th><th data-sk="p24">24h %</th><th data-sk="rsi">RSI (14)</th><th data-sk="rsip">Previous RSI</th><th data-sk="etr">EMA trend</th><th data-sk="dv">24h volume</th></tr></thead><tbody id="tbr"></tbody></table></div></div>
-
-<div class="pg" id="pg-rise"><h2 class="sec">Volume or Open Interest rising (keeps increasing)</h2>
-<div class="wrap"><table style="min-width:1050px">
-<thead><tr><th>Coin</th><th>Exch</th><th>Price</th><th>24h %</th><th>Price move 15m / 1h / 4h</th><th>Off 24h high</th><th>2h range</th><th>15m volume increase</th><th>Last 15m vol</th><th>Vol 1h</th><th>OI change (1h)</th><th>OI total</th><th>Funding %/8h</th><th>Signal</th></tr></thead>
-<tbody id="tb2"></tbody>
-</table></div>
+<div class="tabs" id="pages">
+  <button data-p="radar" class="on">&#9889; Pre-Pump Radar</button>
+  <button data-p="flow">&#128200; Order Flow</button>
+  <button data-p="deriv">&#128202; Derivatives</button>
+  <button data-p="vol">&#128260; Volume</button>
+  <button data-p="ema">EMA 50/200</button>
+  <button data-p="rsi">RSI</button>
+  <button data-p="mkt">All Markets</button>
+  <button data-p="wl">&#9733; Watchlist</button>
 </div>
 
+<!-- ============ PRE-PUMP RADAR ============ -->
+<div class="pg on" id="pg-radar">
+<div class="cap" id="capradar"></div>
+<div class="hit" id="logstat"></div>
+<div class="wrap"><table style="min-width:1200px">
+<thead><tr>
+<th></th><th data-sk="base">Coin</th><th data-sk="n">Exch</th><th data-sk="price">Price</th><th data-sk="p24">24h %</th>
+<th data-sk="score">Signal Score</th><th data-sk="oiPct">OI 1h %</th><th data-sk="oiZ">OI Z-score</th>
+<th data-sk="fund">Funding</th><th data-sk="fundTrend">Fund trend</th><th data-sk="dHi">Off 24h hi</th>
+<th data-sk="tight">2h range</th><th data-sk="p1">1h price</th><th data-sk="vs">Vol rise</th>
+<th data-sk="dv">24h vol</th><th>Flags</th>
+</tr></thead>
+<tbody id="tbradar"></tbody></table></div>
+</div>
+
+<!-- ============ ORDER FLOW ============ -->
+<div class="pg" id="pg-flow"><div class="cap" id="capflow"></div>
+<div class="wrap"><table style="min-width:1000px">
+<thead><tr>
+<th></th><th data-sk="base">Coin</th><th data-sk="n">Exch</th><th data-sk="price">Price</th><th data-sk="p24">24h %</th>
+<th data-sk="cvd">CVD (1h)</th><th data-sk="taker">Taker buy %</th><th data-sk="cvdDiv">CVD/Price div</th>
+<th data-sk="lsr">Long/Short</th><th data-sk="v15">Vol 15m %</th><th data-sk="dv">24h vol</th>
+</tr></thead>
+<tbody id="tbflow"></tbody></table></div>
+</div>
+
+<!-- ============ DERIVATIVES ============ -->
+<div class="pg" id="pg-deriv"><div class="cap" id="capderiv"></div>
+<div class="wrap"><table style="min-width:1000px">
+<thead><tr>
+<th></th><th data-sk="base">Coin</th><th data-sk="n">Exch</th><th data-sk="price">Price</th>
+<th data-sk="oi">Open Interest</th><th data-sk="oiPct">OI 1h %</th><th data-sk="oiZ">OI Z-score</th>
+<th data-sk="fund">Funding %/8h</th><th data-sk="fund8h">8h avg</th><th data-sk="oiBy">OI by exchange</th>
+<th data-sk="liq">Liq 24h</th>
+</tr></thead>
+<tbody id="tbderiv"></tbody></table></div>
+</div>
+
+<!-- ============ VOLUME ============ -->
+<div class="pg" id="pg-vol"><div class="cap" id="capv"></div><div class="wrap"><table style="min-width:1000px">
+<thead><tr><th></th><th data-sk="base">Coin</th><th data-sk="n">Exch</th><th data-sk="price">Price</th><th data-sk="p24">24h %</th><th data-sk="p1">1h price</th><th data-sk="dHi">Off 24h hi</th><th data-sk="tight">2h range</th><th data-sk="q10">10m volume</th><th data-sk="q1h">1h volume</th><th data-sk="oiPct">1h OI chg</th><th data-sk="oi">Open interest</th><th data-sk="fund">Funding %/8h</th></tr></thead>
+<tbody id="tbv"></tbody></table></div></div>
+
+<!-- ============ EMA ============ -->
+<div class="pg" id="pg-ema"><div class="cap" id="cape"></div>
+<div class="seg" id="segE"><button data-m="both" class="on">All</button><button data-m="bull">Bullish</button><button data-m="bear">Bearish</button></div>
+<div class="wrap"><table style="min-width:900px"><thead><tr><th></th><th data-sk="base">Coin</th><th data-sk="n">Exch</th><th data-sk="price">Price</th><th data-sk="p24">24h %</th><th data-sk="ctype">Cross</th><th data-sk="ago">When</th><th data-sk="e50">EMA 50</th><th data-sk="e200">EMA 200</th><th data-sk="gap">Gap %</th><th data-sk="rsi">RSI</th><th data-sk="dv">24h vol</th></tr></thead><tbody id="tbe"></tbody></table></div></div>
+
+<!-- ============ RSI ============ -->
+<div class="pg" id="pg-rsi"><div class="cap" id="capr"></div>
+<div class="seg" id="segR"><button data-m="all" class="on">All</button><button data-m="ob">Overbought</button><button data-m="os">Oversold</button></div>
+<div class="wrap"><table style="min-width:800px"><thead><tr><th></th><th data-sk="base">Coin</th><th data-sk="n">Exch</th><th data-sk="price">Price</th><th data-sk="p24">24h %</th><th data-sk="rsi">RSI (14)</th><th data-sk="rsip">Prev RSI</th><th data-sk="etr">EMA trend</th><th data-sk="dv">24h vol</th></tr></thead><tbody id="tbr"></tbody></table></div></div>
+
+<!-- ============ MARKETS ============ -->
 <div class="pg" id="pg-mkt"><div id="pg"><div id="pgb"></div></div>
 <div class="wrap"><table>
 <thead><tr>
 <th></th><th data-k="base">Coin</th><th data-k="n">Exch</th><th data-k="price">Price</th><th data-k="p24">24h %</th>
 <th data-k="v15">Vol 15m %</th><th data-k="v1">Vol 1h %</th><th data-k="v4">Vol 4h %</th><th data-k="v24">Vol 24h %</th>
-<th data-k="dv">24h volume (all)</th><th data-k="oi">Open interest</th><th data-k="fund">Funding %/8h</th><th data-k="score">Signal</th>
+<th data-k="oiPct">OI 1h %</th><th data-k="dv">24h vol</th><th data-k="oi">OI</th><th data-k="fund">Funding</th><th data-k="score">Score</th>
 </tr></thead>
 <tbody id="tb"></tbody>
 </table></div>
@@ -174,21 +182,21 @@ body{padding-top:6px}
 
 <script>
 const HLA="https://api.hyperliquid.xyz/info",BF="https://fapi.binance.com/fapi/v1",BYA="https://api.bybit.com/v5/market",OKA="https://www.okx.com/api/v5";
+const BFD="https://fapi.binance.com/futures/data";
 const $=id=>document.getElementById(id);
 const coins=new Map(),status={},hold={},busy={};
 const LET={hl:"H",bn:"B",by:"Y",ok:"O"},NAME={hl:"Hyperliquid",bn:"Binance",by:"Bybit",ok:"OKX"};
-let emaM="both",rsiM="all",page="vol",tab="all",sk="score",sd=-1,left=0,lastR=0,btcP1=null,btcP24=null;
+let emaM="both",rsiM="all",page="radar",tab="all",sk="score",sd=-1,left=0,lastR=0,btcP1=null,btcP24=null;
 let alerts=!!(window.Notification&&Notification.permission==="granted");
 let wl=new Set();
 try{wl=new Set(JSON.parse(localStorage.getItem("wl")||"[]"))}catch(e){}
 const saveWl=()=>{try{localStorage.setItem("wl",JSON.stringify([...wl]))}catch(e){}};
 
-// --- filter persistence ---
-const FILTERS=["q","mv","mm","md","ty","mo","rm","dv15","ep","m24","m15","a10","a1h","aoi","ecw","rhi","rlo","ri","etf"];
-try{const s=JSON.parse(localStorage.getItem("filters")||"{}");for(const k of FILTERS)if(s[k]!=null)$(k).value=s[k]}catch(e){}
-function saveFilters(){const s={};for(const k of FILTERS)s[k]=$(k).value;try{localStorage.setItem("filters",JSON.stringify(s))}catch(e){}}
+const FILTERS=["q","mv","mm","md","ty","mo","rm","dv15","ep","m24","m15","a10","a1h","aoi","ecw","rhi","rlo","ri","etf","mz","mf","mhi","mtr"];
+try{const s=JSON.parse(localStorage.getItem("filters")||"{}");for(const k of FILTERS)if(s[k]!=null&&$(k))$(k).value=s[k]}catch(e){}
+function saveFilters(){const s={};for(const k of FILTERS)if($(k))s[k]=$(k).value;try{localStorage.setItem("filters",JSON.stringify(s))}catch(e){}}
 
-// --- signal log ---
+// ================= SIGNAL LOG =================
 const SIGLOG=[];
 try{const s=JSON.parse(localStorage.getItem("siglog")||"[]");if(Array.isArray(s))for(const x of s)SIGLOG.push(x)}catch(e){}
 function logSignals(all){
@@ -198,7 +206,7 @@ function logSignals(all){
     if(!o.pre)continue;
     const last=SIGLOG.find(x=>x.k===o.key&&now-x.t<3600e3);
     if(last)continue;
-    SIGLOG.push({k:o.key,b:o.base,t:now,p:o.price,v15:o.v15,v1:o.v1,p1:o.p1,oi:o.oiPct,f:o.fund,r1:null,r4:null,r24:null,rNow:null});
+    SIGLOG.push({k:o.key,b:o.base,t:now,p:o.price,v15:o.v15,v1:o.v1,p1:o.p1,oi:o.oiPct,oiZ:o.oiZ,f:o.fund,cvd:o.cvd,r1:null,r4:null,r24:null,rNow:null});
     changed=true;
   }
   for(const s of SIGLOG){
@@ -214,6 +222,7 @@ function logSignals(all){
   if(changed)try{localStorage.setItem("siglog",JSON.stringify(SIGLOG))}catch(e){}
 }
 
+// ================= HTTP =================
 async function get(url,opt){
   const r=await fetch(url,opt);
   if(r.status===429||r.status===418)throw new Error("429");
@@ -230,6 +239,7 @@ const TFRE=/TRADFI|TRADIFI|EQUIT|STOCK|COMMODIT|FOREX|\bETF\b/i;
 const tfBn=(sym,b)=>{const s=meta.bn&&meta.bn.get(sym);return BL.has(b)||!!(s&&TFRE.test([s.contractType,s.underlyingType,JSON.stringify(s.underlyingSubType||"")].join(" ")))};
 const tfBy=(sym,b)=>{const s=meta.by&&meta.by.get(sym);return BL.has(b)||!!(s&&TFRE.test([s.symbolType,s.contractType].join(" ")))};
 const tfOk=(id,b)=>{const s=meta.ok&&meta.ok.get(id);return BL.has(b)||!!(s&&["3","4","5","6"].includes(String(s.instCategory)))};
+
 async function loadInfo(){
   await Promise.all([
     meta.bn||get(BF+"/exchangeInfo").then(d=>{meta.bn=new Map(d.symbols.map(x=>[x.symbol,x]))}).catch(()=>{}),
@@ -239,6 +249,7 @@ async function loadInfo(){
 }
 function up(b,tf){const k=b+(tf?"~":"");let o=coins.get(k);if(!o){o={base:b,key:k,tf:!!tf,ex:{},at:0};coins.set(k,o)}return o}
 
+// ================= LOADERS =================
 const loaders={
   async hl(){
     const [m,c]=await hlPost({type:"metaAndAssetCtxs"});let n=0;
@@ -293,6 +304,7 @@ async function loadAll(){
   renderSrc();
 }
 
+// ================= AGGREGATION =================
 function agg(o){
   const e=Object.entries(o.ex).map(x=>x[1]);
   o.n=e.length;
@@ -302,8 +314,12 @@ function agg(o){
   const pick=k=>{for(const s of ["bn","by","hl","ok"])if(o.ex[s]&&o.ex[s][k]!=null)return o.ex[s][k];return null};
   o.price=pick("price");o.p24=pick("p24");
   o.src=o.bnSym?"bn":o.bySym?"by":o.hlName?"hl":null;
+  // per-exchange OI breakdown
+  o.oiBy={};
+  for(const k of["bn","by","hl","ok"])if(o.ex[k]&&o.ex[k].oi)o.oiBy[k]=o.ex[k].oi;
 }
 
+// ================= CANDLE CALC =================
 function calc(o,k){
   const v=k.map(x=>x.q),n=v.length;
   const sum=(a,b)=>{let s=0;for(let i=a;i<b;i++)s+=v[i];return s};
@@ -320,8 +336,7 @@ function calc(o,k){
   o.p15=pc(1);o.p1=pc(4);o.p4=pc(16);
   let st=0;for(let i=n-1;i>=1&&st<8;i--){if(v[i]>v[i-1])st++;else break}
   o.vs=st;o.lq=v[n-1];
-
-  // 24h high/low & distance from high, plus 2h coiling range
+  // 24h high/low
   const w24=k.slice(-96);
   if(w24.length){
     o.hi24=Math.max(...w24.map(x=>x.h||x.c));
@@ -330,6 +345,7 @@ function calc(o,k){
     o.dHi=o.hi24?(lastC/o.hi24-1)*100:null;
     o.range24=o.lo24?((o.hi24/o.lo24-1)*100):null;
   }
+  // 2h tightness
   const t2=k.slice(-8);
   if(t2.length){
     const hi=Math.max(...t2.map(x=>x.h||x.c));
@@ -338,7 +354,7 @@ function calc(o,k){
   }
 }
 
-const BFD="https://fapi.binance.com/futures/data";
+// ================= OI HISTORY =================
 const ofn={
   bn:async o=>(await get(`${BFD}/openInterestHist?symbol=${o.bnSym}&period=15m&limit=5`)).map(x=>+x.sumOpenInterestValue),
   by:async o=>(await get(`${BYA}/open-interest?category=linear&symbol=${o.bySym}&intervalTime=15min&limit=5`)).result.list.slice().reverse().map(x=>+x.openInterest)
@@ -347,6 +363,13 @@ function setOi(o,a){
   if(a.length<5||!a[0])return;
   let st=0;for(let i=a.length-1;i>=1;i--){if(a[i]>a[i-1])st++;else break}
   o.os=st;o.oiPct=(a[a.length-1]/a[0]-1)*100;
+  // OI Z-score: how many std devs is current OI move vs recent history
+  const changes=[];for(let i=1;i<a.length;i++)changes.push(a[i]-a[i-1]);
+  if(changes.length>=3){
+    const mu=changes.reduce((s,x)=>s+x,0)/changes.length;
+    const sg=Math.sqrt(changes.reduce((s,x)=>s+(x-mu)**2,0)/changes.length);
+    o.oiZ=sg>0?(changes[changes.length-1]-mu)/sg:0;
+  }
 }
 async function tickOi(){
   if(busy.oi||Date.now()<(hold.oi||0))return;
@@ -366,6 +389,49 @@ async function tickOi(){
   busy.oi=false;
 }
 
+// ================= ORDER FLOW (CVD + TAKER + LSR) =================
+const flowFns={
+  bn:{
+    taker:async o=>(await get(`${BFD}/takerlongshortRatio?symbol=${o.bnSym}&period=1h&limit=6`)).map(x=>({buy:+x.buyVol,sell:+x.sellVol,ratio:+x.buySellRatio})),
+    lsr:async o=>(await get(`${BFD}/globalLongShortAccountRatio?symbol=${o.bnSym}&period=1h&limit=1`))[0]
+  }
+};
+function calcFlow(o,tk,ls){
+  if(tk&&tk.length){
+    let buy=0,sell=0;
+    for(const x of tk){buy+=x.buy;sell+=x.sell}
+    o.cvd=(buy-sell)/(buy+sell)*100;  // normalized CVD as % imbalance
+    o.taker=buy/(buy+sell)*100;       // % taker buys
+  }
+  if(ls){o.lsr=+ls.longShortRatio;}
+}
+async function tickFlow(src){
+  const k="f"+src;
+  if(busy[k]||Date.now()<(hold[k]||0))return;
+  const md=(+$("md").value||0)*1e6,now=Date.now();let best=null,bs=-1;
+  for(const o of coins.values()){
+    if(o.src!==src||o.dv<md||o.tf)continue;
+    const age=now-(o.fa||0);
+    if(o.fa&&age<60000)continue;
+    const sc=o.fa?age:1e12+o.dv;
+    if(sc>bs){bs=sc;best=o}
+  }
+  if(!best||!flowFns[src])return;
+  busy[k]=true;
+  try{
+    const [tk,ls]=await Promise.all([
+      flowFns[src].taker(best).catch(()=>null),
+      flowFns[src].lsr(best).catch(()=>null)
+    ]);
+    calcFlow(best,tk,ls);
+    best.fa=Date.now();
+  }catch(e){
+    if(String(e.message)==="429")hold[k]=Date.now()+30000;else best.fa=Date.now();
+  }
+  busy[k]=false;
+}
+
+// ================= 1-MIN VOLUME =================
 const m1f={
   bn:async o=>(await get(`${BF}/klines?symbol=${o.bnSym}&interval=1m&limit=60`)).map(x=>({q:+x[7]})),
   by:async o=>(await get(`${BYA}/kline?category=linear&symbol=${o.bySym}&interval=1&limit=60`)).result.list.slice().reverse().map(x=>({q:+x[6]}))
@@ -393,6 +459,7 @@ async function tick1(src){
   busy[k1]=false;
 }
 
+// ================= EMA / RSI =================
 const TFM={"1h":["1h","60"],"4h":["4h","240"],"1d":["1d","D"]};
 const ef={
   bn:async o=>(await get(`${BF}/klines?symbol=${o.bnSym}&interval=${TFM[$("etf").value][0]}&limit=499`)).map(x=>+x[4]),
@@ -433,7 +500,7 @@ async function tickE(src){
   busy[k]=false;
 }
 
-// candle mappers now include h/l
+// ================= 15m CANDLES =================
 const cf={
   bn:async o=>(await get(`${BF}/klines?symbol=${o.bnSym}&interval=15m&limit=195`)).map(x=>({o:+x[1],h:+x[2],l:+x[3],c:+x[4],q:+x[7]})),
   by:async o=>(await get(`${BYA}/kline?category=linear&symbol=${o.bySym}&interval=15&limit=195`)).result.list.slice().reverse().map(x=>({o:+x[1],h:+x[2],l:+x[3],c:+x[4],q:+x[6]})),
@@ -462,7 +529,8 @@ async function tick(src){
   busy[src]=false;
 }
 
-const SRT={tbv:["q1h",-1],tbp:["q1h",-1],tbe:["ago",1],tbr:["rsi",-1]};
+// ================= SORTING =================
+const SRT={tbv:["q1h",-1],tbradar:["score",-1],tbflow:["cvd",-1],tbderiv:["oiPct",-1],tbe:["ago",1],tbr:["rsi",-1]};
 const val=(o,k)=>k==="ago"?(o.cr?o.cr.ago:null):k==="ctype"?(o.cr?o.cr.type:null):o[k];
 function sortBy(arr,id){
   const [k,d]=SRT[id];
@@ -474,16 +542,56 @@ function sortBy(arr,id){
     return x===y?b.dv-a.dv:d*(x-y);
   });
 }
-function sig(o,mv,mm){
-  const h=mv/2;let s=0;
+
+// ================= SIGNAL SCORING =================
+function score(o,mv,mm){
+  let s=0;
+  // Volume component (0-3)
   if(o.v15!=null)s+=o.v15>=2*mv?2:o.v15>=mv?1:0;
-  if(o.v1!=null)s+=o.v1>=mv?2:o.v1>=h?1:0;
-  if(o.v4!=null&&o.v4>=h)s++;
-  if(o.v24!=null&&o.v24>=h)s++;
-  if(o.p15!=null&&o.p15>0)s++;
-  o.score=s;
+  if(o.v1!=null)s+=o.v1>=mv?2:o.v1>=mv/2?1:0;
+  if(o.v4!=null&&o.v4>=mv/2)s++;
+  if(o.v24!=null&&o.v24>=mv/2)s++;
+  // OI component (0-3)
+  if(o.oiPct!=null){
+    if(o.oiPct>=3)s+=2;
+    else if(o.oiPct>=1)s+=1;
+    if(o.os>=3)s++;
+  }
+  if(o.oiZ!=null&&o.oiZ>=2)s++;
+  // Funding squeeze (0-2)
+  if(o.fund!=null){
+    if(o.fund<-0.03)s+=2;
+    else if(o.fund<0)s+=1;
+  }
+  // CVD / order flow (0-2)
+  if(o.cvd!=null){
+    if(o.cvd>5)s+=2;
+    else if(o.cvd>2)s+=1;
+  }
+  o.score=Math.min(s,12);
+  o.pre=false;
 }
 
+function computePre(o){
+  const m15v=+$("m15").value||1.5,mm=+$("mm").value||3,m24v=+$("m24").value||8;
+  const mfv=+$("mf").value||0.05,mhiv=+$("mhi").value||-3,mtrv=+$("mtr").value||8;
+  const mo=+$("mo").value||1,mzv=+$("mz").value||1.5;
+  const mv=+$("mv").value||100;
+  // All filters must pass
+  if(!(o.v15>=mv||o.v1>=mv||o.os>=3))return;
+  if(o.p15!=null&&(o.p15>m15v||o.p15<-1))return;
+  if(o.p1!=null&&(o.p1>mm||o.p1<-1.5))return;
+  if(o.p4!=null&&(o.p4>mm*2||o.p4<-3))return;
+  if(o.p24!=null&&o.p24>m24v)return;
+  if(o.fund!=null&&o.fund>mfv)return;
+  if(o.dHi!=null&&(o.dHi>mhiv||o.dHi<-30))return;
+  if(o.tight!=null&&o.tight>mtrv)return;
+  if(o.oiPct!=null&&(o.oiPct<mo))return;
+  if(o.oiZ!=null&&o.oiZ<mzv)return;
+  o.pre=true;
+}
+
+// ================= FORMATTERS =================
 const fm=v=>v==null||isNaN(v)?"-":v>=1e9?(v/1e9).toFixed(2)+"B":v>=1e6?(v/1e6).toFixed(1)+"M":v>=1e3?(v/1e3).toFixed(0)+"K":v.toFixed(0);
 const fp=p=>p==null||isNaN(p)?"-":p>=100?p.toFixed(2):p>=1?p.toFixed(3):p>=0.01?p.toFixed(5):p.toPrecision(3);
 const dl=d=>d==null?"":(d>=0?"+":"-")+"$"+fm(Math.abs(d));
@@ -494,47 +602,152 @@ const pct=(v,mv,d)=>{
 };
 const dHiCell=o=>o.dHi==null?'<span class="mu">...</span>':`<span class="${o.dHi>-3?"r":o.dHi<-30?"mu":"g"}">${o.dHi.toFixed(1)}%</span>`;
 const tightCell=o=>o.tight==null?'<span class="mu">...</span>':`<span class="${o.tight<4?"g":o.tight>10?"r":"mu"}">${o.tight.toFixed(1)}%</span>`;
+const fundCell=o=>{
+  if(o.fund==null)return '<span class="mu">-</span>';
+  const c=o.fund<-0.03?"g":o.fund>0.05?"r":"";
+  return `<span class="${c}">${o.fund.toFixed(4)}</span>`;
+};
 function link(o){
   if(o.bnSym)return "https://www.tradingview.com/chart/?symbol=BINANCE:"+o.bnSym+".P";
   if(o.bySym)return "https://www.tradingview.com/chart/?symbol=BYBIT:"+o.bySym+".P";
   return "https://app.hyperliquid.xyz/trade/"+(o.hlName||o.base);
 }
+function scoreBar(s){
+  const n=6,filled=Math.round(s/12*n);
+  let h="";
+  for(let i=0;i<n;i++)h+=`<i class="${i<filled?(filled>=5?"f h":filled>=3?"f m":"f"):""}" style="height:${8+i*2}px"></i>`;
+  return `<span class="sb">${h}</span> <b>${s}</b>`;
+}
 
-// ---------- MAIN RENDER (only touches the visible page) ----------
+// ================= MAIN RENDER =================
 function render(){
   lastR=Date.now();
   const vis=page==="wl"?"mkt":page;
-  const q=$("q").value.trim().toUpperCase(),mv=+$("mv").value||100,mm=+$("mm").value,md=(+$("md").value||0)*1e6;
+  const q=$("q").value.trim().toUpperCase(),mv=+$("mv").value||100,mm=+$("mm").value||3,md=(+$("md").value||0)*1e6;
   const tfOn=$("ty").value==="all";
-  const m15v=+$("m15").value||1.5,m24v=+$("m24").value||8;
-
-  const isEarly=o=>{
-    if(!(o.p15!=null&&o.p15<=m15v&&o.p15>=-1))return false;
-    if(!(o.p1!=null&&o.p1<=mm&&o.p1>=-1.5))return false;
-    if(!(o.p4!=null&&o.p4<=mm*2&&o.p4>=-3))return false;
-    if(o.p24!=null&&o.p24>m24v)return false;
-    if(o.fund>0.05)return false;
-    if(o.dHi!=null&&o.dHi>-3)return false;    // too close to 24h high
-    if(o.dHi!=null&&o.dHi<-30)return false;   // in freefall
-    if(o.tight!=null&&o.tight>10)return false; // not coiling
-    return true;
-  };
 
   const all=[...coins.values()].filter(o=>tfOn||!o.tf);
   let loaded=0,elig=0;
   all.forEach(o=>{
-    agg(o);sig(o,mv,mm);
-    o.pre=o.p1!=null&&(o.v15>=mv||o.v1>=mv||o.os>=3)&&isEarly(o);
+    agg(o);score(o,mv,mm);computePre(o);
     if(o.dv>=md){elig++;if(o.at)loaded++}
+    // notifications
     if(o.pre&&!o.was&&alerts&&o.at&&Date.now()-(o.nt||0)>1800e3&&window.Notification&&Notification.permission==="granted"){
       o.nt=Date.now();
-      try{new Notification(o.base+" pre-pump signal",{body:`Vol15 ${Math.round(o.v15??0)}% · 1h ${Math.round(o.v1??0)}% · price1h ${(o.p1??0).toFixed(2)}%`})}catch(e){}
+      try{new Notification(o.base+" PRE-PUMP",{body:`Score ${o.score} | OI ${(o.oiPct??0).toFixed(1)}% | Fund ${(o.fund??0).toFixed(3)}% | CVD ${(o.cvd??0).toFixed(1)}`})}catch(e){}
     }
     o.was=o.pre;
   });
   logSignals(all);
 
-  // ---- Markets / Watchlist ----
+  // ---- Pre-Pump Radar ----
+  if(vis==="radar"){
+    const radar=all.filter(o=>o.pre).sort((a,b)=>b.score-a.score||b.dv-a.dv).slice(0,60);
+    $("tbradar").innerHTML=radar.map(o=>{
+      const flags=[];
+      if(o.os>=3)flags.push('<span class="bd bd-oi">OI\u2191'+o.os+'</span>');
+      if(o.cvd>2)flags.push('<span class="bd bd-cvd">CVD+</span>');
+      if(o.fund<-0.03)flags.push('<span class="bd bd-fund">SHORT\u2191</span>');
+      if(o.lsr!=null&&o.lsr>2)flags.push('<span class="bd bd-lsr">LSR '+o.lsr.toFixed(1)+'</span>');
+      if(o.tight!=null&&o.tight<4)flags.push('<span class="bd bd-oi">TIGHT</span>');
+      return `<tr><td class="s ${wl.has(o.key)?"on":""}" data-s="${o.key}">&#9733;</td>
+<td><a href="#" data-c="${o.key}">${o.base}</a>${o.tf?'<span class="tag" style="background:#7d8b99">STOCK</span>':""}</td>
+<td class="ex">${Object.keys(o.ex).map(k=>LET[k]).join(" ")}</td><td>${fp(o.price)}</td>
+<td class="${o.p24>=0?"g":"r"}">${o.p24==null?"-":o.p24.toFixed(2)+"%"}</td>
+<td>${scoreBar(o.score)}</td>
+<td class="${o.oiPct>=1?"g":"mu"}">${o.oiPct==null?"...":(o.oiPct>=0?"+":"")+o.oiPct.toFixed(2)+"%"}${o.os!=null?" ("+o.os+"\u2191)":""}</td>
+<td class="${o.oiZ>=2?"g":o.oiZ>=1?"yl":"mu"}">${o.oiZ==null?"...":o.oiZ.toFixed(1)}</td>
+<td>${fundCell(o)}</td>
+<td class="mu">${o.fund==null?"-":o.fund<-0.02?"\u2193":o.fund>0.02?"\u2191":"\u2192"}</td>
+<td>${dHiCell(o)}</td><td>${tightCell(o)}</td>
+<td class="${o.p1>=0?"g":"r"}">${o.p1==null?"...":o.p1.toFixed(2)+"%"}</td>
+<td>${o.vs!=null&&o.vs>=3?'<span class="g">'+o.vs+'\u2191</span>':'<span class="mu">'+(o.vs??'-')+'</span>'}</td>
+<td>$${fm(o.dv)}</td><td>${flags.join(" ")}</td></tr>`;
+    }).join("")||'<tr><td colspan="16" style="text-align:center;color:#7a8392;padding:20px">No pre-pump signals right now.<br><small>Signals build up over 5-15 minutes after page load. OI data fills in first, then CVD.</small></td></tr>';
+    $("capradar").textContent=`Pre-pump candidates: ${radar.length}  |  Volume expanding + OI rising + price flat + funding not crowded + CVD positive  |  All signals must align`;
+    // hit rate
+    const done=SIGLOG.filter(s=>s.r1!=null);
+    const w1=done.filter(s=>s.r1>0).length;
+    const avg1=done.length?done.reduce((a,s)=>a+s.r1,0)/done.length:0;
+    const done4=SIGLOG.filter(s=>s.r4!=null);
+    const w4=done4.filter(s=>s.r4>0).length;
+    const avg4=done4.length?done4.reduce((a,s)=>a+s.r4,0)/done4.length:0;
+    $("logstat").innerHTML=`Signal log: <b>${SIGLOG.length}</b> logged &middot; 1h: <b>${done.length}</b> resolved (win ${done.length?(w1/done.length*100).toFixed(0):"-"}%, avg ${avg1.toFixed(2)}%) &middot; 4h: <b>${done4.length}</b> resolved (win ${done4.length?(w4/done4.length*100).toFixed(0):"-"}%, avg ${avg4.toFixed(2)}%)`;
+  }
+
+  // ---- Order Flow ----
+  if(vis==="flow"){
+    const fl=all.filter(o=>o.dv>=md&&o.cvd!=null).sort((a,b)=>(b.cvd??-999)-(a.cvd??-999)).slice(0,100);
+    $("tbflow").innerHTML=fl.map(o=>{
+      const div=o.cvd>2&&o.p15<0.5?'<span class="g">Bullish divergence</span>':o.cvd<-2&&o.p15>0.5?'<span class="r">Bearish divergence</span>':'<span class="mu">-</span>';
+      return `<tr><td class="s ${wl.has(o.key)?"on":""}" data-s="${o.key}">&#9733;</td>
+<td><a href="#" data-c="${o.key}">${o.base}</a></td>
+<td class="ex">${Object.keys(o.ex).map(k=>LET[k]).join(" ")}</td><td>${fp(o.price)}</td>
+<td class="${o.p24>=0?"g":"r"}">${o.p24==null?"-":o.p24.toFixed(2)+"%"}</td>
+<td class="${o.cvd>2?"g":o.cvd<-2?"r":"mu"}">${o.cvd.toFixed(1)}%</td>
+<td class="${o.taker>52?"g":o.taker<48?"r":"mu"}">${o.taker==null?"...":o.taker.toFixed(1)+"%"}</td>
+<td>${div}</td><td>${o.lsr==null?"-":o.lsr.toFixed(2)}</td>
+<td>${pct(o.v15,mv,o.d15)}</td><td>$${fm(o.dv)}</td></tr>`;
+    }).join("")||'<tr><td colspan="11" style="text-align:center;color:#7a8392;padding:16px">Order flow data fills in over a few minutes. CVD from Binance taker buy/sell volume.</td></tr>';
+    $("capflow").textContent=`Order flow: CVD = (taker buys - taker sells) / total, normalized. Positive = aggressive buyers. Divergence = CVD disagrees with price.`;
+  }
+
+  // ---- Derivatives ----
+  if(vis==="deriv"){
+    const dl=all.filter(o=>o.dv>=md).sort((a,b)=>Math.abs(b.oiPct??0)-Math.abs(a.oiPct??0)).slice(0,100);
+    $("tbderiv").innerHTML=dl.map(o=>{
+      const oiEx=Object.entries(o.oiBy||{}).map(([k,v])=>`${LET[k]}$${fm(v)}`).join(" ");
+      return `<tr><td class="s ${wl.has(o.key)?"on":""}" data-s="${o.key}">&#9733;</td>
+<td><a href="#" data-c="${o.key}">${o.base}</a></td>
+<td class="ex">${Object.keys(o.ex).map(k=>LET[k]).join(" ")}</td><td>${fp(o.price)}</td>
+<td>$${fm(o.oi)}</td>
+<td class="${o.oiPct>=1?"g":o.oiPct<-1?"r":"mu"}">${o.oiPct==null?"...":(o.oiPct>=0?"+":"")+o.oiPct.toFixed(2)+"%"}${o.os!=null?" ("+o.os+"\u2191)":""}</td>
+<td class="${o.oiZ>=2?"g":o.oiZ>=1?"yl":"mu"}">${o.oiZ==null?"...":o.oiZ.toFixed(1)}</td>
+<td>${fundCell(o)}</td><td>${o.fund==null?"-":(o.fund*3).toFixed(4)}</td>
+<td class="ex">${oiEx||"-"}</td>
+<td>${o.liq?"$"+fm(o.liq):"-"}</td></tr>`;
+    }).join("")||'<tr><td colspan="11" style="text-align:center;color:#7a8392;padding:16px">Derivatives data loads over a few minutes.</td></tr>';
+    $("capderiv").textContent=`OI Z-score: how many standard deviations the latest OI move is vs recent history. >2 = abnormal. Funding trend arrow: ${'\u2193'}=getting more negative (shorts building).`;
+  }
+
+  // ---- Volume ----
+  if(vis==="vol"){
+    const a10=(+$("a10").value||0)*1e6,a1h=(+$("a1h").value||0)*1e6,aoi=+$("aoi").value||0;
+    const f1=o=>o.q10!=null&&o.q10>=a10&&o.q1h>=a1h&&o.dv>=md;
+    const f2=o=>f1(o)&&o.oiPct!=null&&Date.now()-(o.oat||0)<600000&&o.oiPct>=aoi;
+    const sg=v=>(v>=0?"+":"")+v.toFixed(2)+"%";
+    const vr=o=>`<tr><td class="s ${wl.has(o.key)?"on":""}" data-s="${o.key}">&#9733;</td><td><a href="#" data-c="${o.key}">${o.base}</a></td>
+<td class="ex">${Object.keys(o.ex).map(k=>LET[k]).join(" ")}</td><td>${fp(o.price)}</td><td class="${o.p24>=0?"g":"r"}">${o.p24==null?"-":sg(o.p24)}</td>
+<td class="${o.p1>=0?"g":"r"}">${o.p1==null?"...":sg(o.p1)}</td><td>${dHiCell(o)}</td><td>${tightCell(o)}</td>
+<td class="g">$${fm(o.q10)}</td><td class="g">$${fm(o.q1h)}</td>
+<td class="${o.oiPct>=aoi?"g":"mu"}">${o.oiPct==null?"...":sg(o.oiPct)}</td><td>$${fm(o.oi)}</td><td>${fundCell(o)}</td></tr>`;
+    const none='<tr><td colspan="13" style="text-align:center;color:#7a8392;padding:14px">None right now. Data fills in over a minute or two.</td></tr>';
+    const vl=sortBy(all.filter(f1),"tbv").slice(0,200);
+    $("tbv").innerHTML=vl.map(vr).join("")||none;
+    $("capv").textContent=`[10m Volume] >= $${fm(a10)} AND [1h Volume] >= $${fm(a1h)}   (${vl.length} coins)`;
+  }
+
+  // ---- EMA ----
+  if(vis==="ema"){
+    const tfl=$("etf").value.toUpperCase(),cw=+$("ecw").value||6,rhi=+$("rhi").value||70,rlo=+$("rlo").value||30;
+    const sg=v=>(v>=0?"+":"")+v.toFixed(2)+"%";
+    const rc=v=>v==null?"-":`<span class="${v>=rhi?"r":v<=rlo?"g":""}">${v.toFixed(1)}</span>`;
+    const el=sortBy(all.filter(o=>o.e50!=null&&o.dv>=md&&o.cr&&o.cr.ago<cw&&(emaM==="both"||o.cr.type===emaM)),"tbe").slice(0,200);
+    $("tbe").innerHTML=el.map(o=>`<tr><td class="s ${wl.has(o.key)?"on":""}" data-s="${o.key}">&#9733;</td><td><a href="#" data-c="${o.key}">${o.base}</a></td><td class="ex">${Object.keys(o.ex).map(k=>LET[k]).join(" ")}</td><td>${fp(o.price)}</td><td class="${o.p24>=0?"g":"r"}">${o.p24==null?"-":sg(o.p24)}</td><td>${o.cr.type==="bull"?'<span class="v h">Bullish</span>':'<span class="v h" style="background:#fde8ea;color:#c0313e">Bearish</span>'}</td><td>${o.cr.ago===0?"latest":o.cr.ago+" ago"}</td><td>${fp(o.e50)}</td><td>${fp(o.e200)}</td><td class="${o.gap>=0?"g":"r"}">${sg(o.gap)}</td><td>${rc(o.rsi)}</td><td>$${fm(o.dv)}</td></tr>`).join("")||'<tr><td colspan="12" style="text-align:center;color:#7a8392;padding:14px">No crosses. Candle data loads over a few minutes.</td></tr>';
+    $("cape").textContent=`EMA 50/200 crosses on ${tfl} candles, last ${cw} candles (${el.length} coins)`;
+  }
+
+  // ---- RSI ----
+  if(vis==="rsi"){
+    const rhi=+$("rhi").value||70,rlo=+$("rlo").value||30;
+    const sg=v=>(v>=0?"+":"")+v.toFixed(2)+"%";
+    const rc=v=>v==null?"-":`<span class="${v>=rhi?"r":v<=rlo?"g":""}">${v.toFixed(1)}</span>`;
+    const rl=sortBy(all.filter(o=>o.rsi!=null&&o.dv>=md&&(rsiM==="all"||(rsiM==="ob"&&o.rsi>=rhi)||(rsiM==="os"&&o.rsi<=rlo))),"tbr").slice(0,300);
+    $("tbr").innerHTML=rl.map(o=>`<tr><td class="s ${wl.has(o.key)?"on":""}" data-s="${o.key}">&#9733;</td><td><a href="#" data-c="${o.key}">${o.base}</a></td><td class="ex">${Object.keys(o.ex).map(k=>LET[k]).join(" ")}</td><td>${fp(o.price)}</td><td class="${o.p24>=0?"g":"r"}">${o.p24==null?"-":sg(o.p24)}</td><td>${rc(o.rsi)}</td><td>${rc(o.rsip)}</td><td>${o.etr==="bull"?'<span class="g">EMA50>EMA200</span>':'<span class="r">EMA50<EMA200</span>'}</td><td>$${fm(o.dv)}</td></tr>`).join("")||'<tr><td colspan="9" style="text-align:center;color:#7a8392;padding:14px">Nothing yet. Candle data loads over a few minutes.</td></tr>';
+    $("capr").textContent=`RSI (14) on ${$("etf").value.toUpperCase()}. OB >= ${rhi}, OS <= ${rlo} (${rl.length} coins)`;
+  }
+
+  // ---- Markets ----
   if(vis==="mkt"){
     let arr=all.filter(o=>o.dv>=md&&(!q||o.base.includes(q))&&(page!=="wl"||wl.has(o.key)));
     arr.sort((a,b)=>{
@@ -544,97 +757,24 @@ function render(){
       return d?sd*d:(b.dv-a.dv);
     });
     $("tb").innerHTML=arr.slice(0,400).map(o=>{
-      const sc=o.score>=5?"h":o.score>=3?"m":"",st=wl.has(o.key);
+      const sc=o.score>=7?"h":o.score>=4?"m":"",st=wl.has(o.key);
       const ex=Object.keys(o.ex).map(k=>LET[k]).join(" ");
       return `<tr><td class="s ${st?"on":""}" data-s="${o.key}">&#9733;</td>
-<td><a href="#" data-c="${o.key}">${o.base}</a>${o.tf?'<span class="tag" style="background:#7d8b99">STOCK/COMMODITY</span>':""}${o.pre?'<span class="tag">PRE-PUMP</span>':""}</td>
+<td><a href="#" data-c="${o.key}">${o.base}</a>${o.tf?'<span class="tag" style="background:#7d8b99">STOCK</span>':""}${o.pre?'<span class="tag">PRE-PUMP</span>':""}</td>
 <td class="ex">${ex}</td><td>${fp(o.price)}</td><td class="${o.p24>=0?"g":"r"}">${o.p24==null?"-":o.p24.toFixed(2)+"%"}</td>
 <td>${pct(o.v15,mv,o.d15)}</td><td>${pct(o.v1,mv,o.d1)}</td><td>${pct(o.v4,mv,o.d4)}</td><td>${pct(o.v24,mv,o.d24)}</td>
-<td>$${fm(o.dv)}</td><td>$${fm(o.oi)}</td><td>${o.fund==null?"-":o.fund.toFixed(4)}</td>
+<td class="${o.oiPct>=1?"g":"mu"}">${o.oiPct==null?"...":(o.oiPct>=0?"+":"")+o.oiPct.toFixed(1)+"%"}</td>
+<td>$${fm(o.dv)}</td><td>$${fm(o.oi)}</td><td>${fundCell(o)}</td>
 <td><span class="sc ${sc}">${o.at?o.score:"-"}</span></td></tr>`;
-    }).join("")||'<tr><td colspan="13" style="text-align:center;color:#7d8b99;padding:16px">Nothing here yet.</td></tr>';
+    }).join("")||'<tr><td colspan="13" style="text-align:center;color:#7a8392;padding:16px">Nothing here yet.</td></tr>';
     $("pgb").style.width=(elig?loaded/elig*100:0)+"%";
-  }
-
-  // ---- Volume / Pre-pump ----
-  if(vis==="vol"||vis==="pre"){
-    const a10=(+$("a10").value||0)*1e6,a1h=(+$("a1h").value||0)*1e6,aoi=+$("aoi").value||0;
-    const f1=o=>o.q10!=null&&o.q10>=a10&&o.q1h>=a1h&&o.dv>=md;
-    const f2=o=>f1(o)&&o.oiPct!=null&&Date.now()-(o.oat||0)<600000&&o.oiPct>=aoi&&isEarly(o);
-    const sg=v=>(v>=0?"+":"")+v.toFixed(2)+"%";
-    const vr=o=>`<tr><td class="s ${wl.has(o.key)?"on":""}" data-s="${o.key}">&#9733;</td><td><a href="#" data-c="${o.key}">${o.base}</a>${o.tf?'<span class="tag" style="background:#7d8b99">STOCK</span>':""}</td>
-<td class="ex">${Object.keys(o.ex).map(k=>LET[k]).join(" ")}</td><td>${fp(o.price)}</td><td class="${o.p24>=0?"g":"r"}">${o.p24==null?"-":sg(o.p24)}</td>
-<td class="${o.p1>=0?"g":"r"}">${o.p1==null?"...":sg(o.p1)}</td><td>${dHiCell(o)}</td><td>${tightCell(o)}</td>
-<td class="g">$${fm(o.q10)}</td><td class="g">$${fm(o.q1h)}</td>
-<td class="${o.oiPct>=aoi?"g":"mu"}">${o.oiPct==null?"...":sg(o.oiPct)}</td><td>$${fm(o.oi)}</td><td>${o.fund==null?"-":o.fund.toFixed(4)}</td></tr>`;
-    const none='<tr><td colspan="13" style="text-align:center;color:#7d8b99;padding:14px">None right now. Data fills in over a minute or two.</td></tr>';
-    if(vis==="vol"){
-      const vl=sortBy(all.filter(f1),"tbv").slice(0,200);
-      $("tbv").innerHTML=vl.map(vr).join("")||none;
-      $("capv").textContent=`[10m Volume] >= $${fm(a10)} AND [1h Volume] >= $${fm(a1h)}   (${vl.length} coins)`;
-    } else {
-      const pl=sortBy(all.filter(f2),"tbp").slice(0,200);
-      $("tbp").innerHTML=pl.map(vr).join("")||none;
-      $("capp").textContent=`[10m Vol] >= $${fm(a10)} AND [1h Vol] >= $${fm(a1h)} AND [1h OI Chg] >= ${aoi}% AND price not pumped & coiling   (${pl.length} coins)`;
-      const done=SIGLOG.filter(s=>s.r1!=null);
-      const w1=done.filter(s=>s.r1>0).length;
-      const avg1=done.length?done.reduce((a,s)=>a+s.r1,0)/done.length:0;
-      const done4=SIGLOG.filter(s=>s.r4!=null);
-      const w4=done4.filter(s=>s.r4>0).length;
-      $("logstat").innerHTML=`Signal log: <b>${SIGLOG.length}</b> logged · 1h results: <b>${done.length}</b> (win ${done.length?(w1/done.length*100).toFixed(0):"-"}%, avg ${avg1.toFixed(2)}%) · 4h results: <b>${done4.length}</b> (win ${done4.length?(w4/done4.length*100).toFixed(0):"-"}%)`;
-    }
-  }
-
-  // ---- EMA crosses ----
-  if(vis==="ema"){
-    const tfl=$("etf").value.toUpperCase(),cw=+$("ecw").value||6,rhi=+$("rhi").value||70,rlo=+$("rlo").value||30;
-    const sg=v=>(v>=0?"+":"")+v.toFixed(2)+"%";
-    const rc=v=>v==null?"-":`<span class="${v>=rhi?"r":v<=rlo?"g":""}">${v.toFixed(1)}</span>`;
-    const el0=all.filter(o=>o.e50!=null&&o.dv>=md&&o.cr&&o.cr.ago<cw&&(emaM==="both"||o.cr.type===emaM));
-    const el=sortBy(el0,"tbe").slice(0,200);
-    $("tbe").innerHTML=el.map(o=>`<tr><td class="s ${wl.has(o.key)?"on":""}" data-s="${o.key}">&#9733;</td><td><a href="#" data-c="${o.key}">${o.base}</a></td><td class="ex">${Object.keys(o.ex).map(k=>LET[k]).join(" ")}</td><td>${fp(o.price)}</td><td class="${o.p24>=0?"g":"r"}">${o.p24==null?"-":sg(o.p24)}</td><td>${o.cr.type==="bull"?'<span class="v h">Bullish</span>':'<span class="v h" style="background:#fde8ea;color:#c0313e">Bearish</span>'}</td><td>${o.cr.ago===0?"latest candle":o.cr.ago+" candles ago"}</td><td>${fp(o.e50)}</td><td>${fp(o.e200)}</td><td class="${o.gap>=0?"g":"r"}">${sg(o.gap)}</td><td>${rc(o.rsi)}</td><td>$${fm(o.dv)}</td></tr>`).join("")||'<tr><td colspan="12" style="text-align:center;color:#7d8b99;padding:14px">No crosses in this window. Candle data loads over a few minutes.</td></tr>';
-    $("cape").textContent=`EMA 50 crossing EMA 200 on ${tfl} candles, within the last ${cw} candles   (${el.length} coins)`;
-  }
-
-  // ---- RSI ----
-  if(vis==="rsi"){
-    const tfl=$("etf").value.toUpperCase(),rhi=+$("rhi").value||70,rlo=+$("rlo").value||30;
-    const sg=v=>(v>=0?"+":"")+v.toFixed(2)+"%";
-    const rc=v=>v==null?"-":`<span class="${v>=rhi?"r":v<=rlo?"g":""}">${v.toFixed(1)}</span>`;
-    const rl0=all.filter(o=>o.rsi!=null&&o.dv>=md&&(rsiM==="all"||(rsiM==="ob"&&o.rsi>=rhi)||(rsiM==="os"&&o.rsi<=rlo)));
-    const rl=sortBy(rl0,"tbr").slice(0,300);
-    $("tbr").innerHTML=rl.map(o=>`<tr><td class="s ${wl.has(o.key)?"on":""}" data-s="${o.key}">&#9733;</td><td><a href="#" data-c="${o.key}">${o.base}</a></td><td class="ex">${Object.keys(o.ex).map(k=>LET[k]).join(" ")}</td><td>${fp(o.price)}</td><td class="${o.p24>=0?"g":"r"}">${o.p24==null?"-":sg(o.p24)}</td><td>${rc(o.rsi)}</td><td>${rc(o.rsip)}</td><td>${o.etr==="bull"?'<span class="g">EMA50 above EMA200</span>':'<span class="r">EMA50 below EMA200</span>'}</td><td>$${fm(o.dv)}</td></tr>`).join("")||'<tr><td colspan="9" style="text-align:center;color:#7d8b99;padding:14px">Nothing here yet. Candle data loads over a few minutes.</td></tr>';
-    $("capr").textContent=`RSI (14) on ${tfl} candles. Overbought >= ${rhi}, oversold <= ${rlo}   (${rl.length} coins)`;
-  }
-
-  // ---- Rising ----
-  if(vis==="rise"){
-    const mo=+$("mo").value||0,rm=$("rm").value,early=$("ep").value==="early";
-    const fresh=o=>Date.now()-(o.oat||0)<600000;
-    const th=(+$("dv15").value||0)*1e6;
-    // volume rising: either big $ delta vs baseline OR >=3 consecutive rising 15m candles
-    const vOk=o=>(o.d15!=null&&o.d15>=th)||(o.vs!=null&&o.vs>=3);
-    const oOk=o=>o.os>=3&&o.oiPct!=null&&o.oiPct>=mo&&fresh(o);
-    const rise=all.filter(o=>o.dv>=md&&(!early||isEarly(o))&&(rm==="both"?(vOk(o)&&oOk(o)):rm==="vol"?vOk(o):rm==="oi"?oOk(o):(vOk(o)||oOk(o))))
-      .sort((a,b)=>((oOk(b)&&vOk(b))-(oOk(a)&&vOk(a)))||b.score-a.score||b.dv-a.dv).slice(0,40);
-    $("tb2").innerHTML=rise.map(o=>{
-      const v=vOk(o),oi=oOk(o),ty=v&&oi?"BOTH":v?"VOLUME":"OI";
-      const vsTxt=o.vs!=null&&o.vs>=2?` <span class="mu">(${o.vs}\u2191)</span>`:"";
-      return `<tr><td><a href="#" data-c="${o.key}">${o.base}</a><span class="tag">${ty}</span></td>
-<td class="ex">${Object.keys(o.ex).map(k=>LET[k]).join(" ")}</td><td>${fp(o.price)}</td><td class="${o.p24>=0?"g":"r"}">${o.p24==null?"-":o.p24.toFixed(2)+"%"}</td>
-<td class="mu">${o.p1==null?"...":(o.p15==null?"-":o.p15.toFixed(1))+"% / "+o.p1.toFixed(1)+"% / "+(o.p4==null?"-":o.p4.toFixed(1)+"%")}</td>
-<td>${dHiCell(o)}</td><td>${tightCell(o)}</td>
-<td class="${v?"g":"mu"}">${o.d15==null?"...":dl(o.d15)}${vsTxt}</td><td>$${fm(o.lq)}</td><td>${pct(o.v1,mv,o.d1)}</td>
-<td class="${oi?"g":"mu"}">${o.oiPct==null||!fresh(o)?"...":(o.oiPct>=0?"+":"")+o.oiPct.toFixed(2)+"%"} <span class="mu">${o.os!=null&&fresh(o)?"("+o.os+" rises)":""}</span></td>
-<td>$${fm(o.oi)}</td><td>${o.fund==null?"-":o.fund.toFixed(4)}</td>
-<td><span class="sc ${o.score>=5?"h":o.score>=3?"m":""}">${o.score}</span></td></tr>`}).join("")||'<tr><td colspan="14" style="text-align:center;color:#7d8b99;padding:14px">None right now. Volume signal = latest 15m volume is above normal, or 3+ rising 15m candles. OI rising = 3 checks in a row.</td></tr>';
   }
 
   // sort indicators
   for(const id in SRT){const t=$(id);if(!t)continue;const tbl=t.closest("table");if(!tbl)continue;tbl.querySelectorAll("th[data-sk]").forEach(h=>{const on=h.dataset.sk===SRT[id][0];h.classList.toggle("asc",on&&SRT[id][1]>0);h.classList.toggle("desc",on&&SRT[id][1]<0)})}
 }
 
-// ---------- EVENTS ----------
+// ================= EVENTS =================
 document.querySelectorAll("th[data-k]").forEach(th=>th.onclick=()=>{
   const k=th.dataset.k;sd=k===sk?-sd:(k==="base"?1:-1);sk=k;render();
 });
@@ -655,24 +795,20 @@ document.body.onclick=e=>{
   const n=d.s;if(!n)return;
   wl.has(n)?wl.delete(n):wl.add(n);saveWl();render();
 };
-FILTERS.forEach(id=>$(id).oninput=()=>{saveFilters();render()});
-FILTERS.forEach(id=>$(id).onchange=saveFilters);
+FILTERS.forEach(id=>{if($(id)){$(id).oninput=()=>{saveFilters();render()};$(id).onchange=saveFilters}});
 
-// debounced search render
 let qT=null;
 $("q").oninput=()=>{saveFilters();clearTimeout(qT);qT=setTimeout(render,180)};
-
 $("rf").onclick=()=>{left=+$("ri").value;loadAll().then(render)};
 
-// notifications button
 const ntfBtn=$("ntf");
 function refreshNtf(){ntfBtn.classList.toggle("on",alerts);ntfBtn.innerHTML=alerts?"&#128276; Alerts on":"&#128276; Alerts off";}
 refreshNtf();
 ntfBtn.onclick=async()=>{
-  if(!window.Notification){alert("Notifications not supported in this browser.");return}
+  if(!window.Notification){alert("Notifications not supported.");return}
   const p=await Notification.requestPermission();
   alerts=p==="granted";refreshNtf();
-  if(alerts)try{new Notification("Alerts enabled",{body:"You'll get a ping when a new pre-pump signal appears."})}catch(e){}
+  if(alerts)try{new Notification("Pre-Pump Radar",{body:"You'll be pinged when a coin passes all filters."})}catch(e){}
 };
 
 // BTC market context
@@ -682,18 +818,19 @@ async function tickBtc(){
     btcP1=(+k[k.length-1][4]/+k[k.length-2][4]-1)*100;
     btcP24=(+k[k.length-1][4]/+k[0][4]-1)*100;
     const s=v=>(v>=0?"+":"")+v.toFixed(2)+"%";
-    const risk=btcP1<-1.5?' <span class="r">&#9888; market risk-off, longs are risky</span>':'';
+    const risk=btcP1<-1.5?' <span class="r">&#9888; risk-off</span>':'';
     $("btc").innerHTML=`BTC &nbsp;<b class="${btcP1<-1?"r":btcP1>1?"g":""}">1h ${s(btcP1)}</b> &middot; <b class="${btcP24<0?"r":"g"}">24h ${s(btcP24)}</b>${risk}`;
   }catch(e){}
 }
 
-// ---------- BOOT ----------
+// ================= BOOT =================
 (async()=>{
   renderSrc();
   await loadAll();
   tickBtc();
   left=+$("ri").value;
   render();
+  // staggered schedulers — Binance/Bybit first (fast), HL last (slow)
   setInterval(()=>tick("bn"),300);
   setInterval(()=>tick("by"),300);
   setInterval(()=>tick("hl"),1500);
@@ -702,11 +839,11 @@ async function tickBtc(){
   setInterval(()=>tick1("by"),300);
   setInterval(()=>tickE("bn"),400);
   setInterval(()=>tickE("by"),400);
+  setInterval(()=>tickFlow("bn"),500);  // CVD + LSR from Binance
   setInterval(tickBtc,45000);
   setInterval(()=>{
     left--;
     if(left<=0){left=+$("ri").value;loadAll()}
-    // throttle periodic re-render to ~2s (any user action resets lastR immediately)
     if(Date.now()-lastR<1900)return;
     render();
   },1000);
