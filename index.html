@@ -4,298 +4,79 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#ffffff">
-<title>Pre-Pump Radar — Volume Reset at 7pm Winnipeg</title>
+<title>Pre-Pump List</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#fff;--card:#f6f7f9;--line:#e7e9ee;--tx:#14171c;--mu:#7a8392;--gr:#119a57;--rd:#e0404d;--yl:#f5a524}
+:root{--bg:#fff;--line:#e7e9ee;--tx:#14171c;--mu:#7a8392;--gr:#119a57;--rd:#e0404d;--yl:#f5a524}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--tx);font:13px "Outfit",system-ui,-apple-system,sans-serif;padding:10px;padding-top:6px}
-h1{font-size:24px;font-weight:700;letter-spacing:-.5px;margin:0}
-h1 span{font-size:12px;font-weight:400;color:var(--mu);margin-left:8px}
-.top{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:6px}
-.top .sp{flex:1}
-.src{margin-bottom:6px;font-size:11px;color:var(--mu)}
-.src b{display:inline-block;background:#f1f3f6;border-radius:4px;padding:2px 7px;margin-right:5px;color:var(--tx);border-left:3px solid transparent}
-.src b.ok{border-left-color:var(--gr)}.src b.err{border-left-color:var(--rd)}
-#btc{margin-bottom:8px;font-size:12px}
-.bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;background:#fff;border:1px solid var(--line);padding:8px;border-radius:8px;margin-bottom:8px}
+body{margin:0;background:var(--bg);color:var(--tx);font:13px "Outfit",system-ui,-apple-system,sans-serif;padding:12px}
+.bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:10px;font-size:12px}
 .bar label{display:flex;flex-direction:column;font-size:10px;color:var(--mu);gap:2px}
 select,input{background:#fff;color:var(--tx);border:1px solid #d9dce3;border-radius:6px;padding:5px;width:80px;font-family:inherit}
-input#q{width:100px}
-button{background:#eef0f3;color:var(--tx);border:0;border-radius:6px;padding:7px 11px;cursor:pointer;font-size:12px;font-weight:500;font-family:inherit}
-button.on{background:#14171c;color:#fff;font-weight:600}
-.tabs{display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap}
+input#q{width:110px}
+button{background:#14171c;color:#fff;border:0;border-radius:6px;padding:7px 12px;cursor:pointer;font-size:12px;font-weight:600;font-family:inherit}
 .wrap{overflow-x:auto;border-radius:8px}
-table{border-collapse:collapse;width:100%;min-width:1000px;background:#fff;border:1px solid var(--line)}
-th,td{padding:7px 9px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap}
-th{color:var(--mu);font-size:10px;font-weight:600;cursor:pointer;position:sticky;top:0;background:#fff}
-th:nth-child(-n+3),td:nth-child(-n+3){text-align:left}
-td.s{cursor:pointer;color:#c5cad3;width:24px;padding-right:0}
-td.s.on{color:var(--yl)}
+table{border-collapse:collapse;width:100%;min-width:900px;background:#fff;border:1px solid var(--line)}
+th,td{padding:9px 10px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap}
+th{color:var(--mu);font-size:10px;font-weight:600;cursor:pointer;background:#fff;position:sticky;top:0}
+th:first-child,td:first-child{text-align:left}
 a{color:var(--tx);text-decoration:none;font-weight:600}
 .g{color:var(--gr)}.r{color:var(--rd)}.mu{color:var(--mu)}.yl{color:var(--yl)}
-.v{font-weight:600}
-.v.w{color:var(--gr)}.v.h{background:#e2f6ea;color:#0d7a44;font-weight:700;border-radius:4px;padding:2px 5px}
-.v.n{color:var(--rd);font-weight:400}
-.sc{display:inline-block;min-width:22px;text-align:center;border-radius:4px;padding:2px 5px;font-weight:700;background:#eef0f3}
-.sc.m{background:#fff1cc;color:#8a5a00}.sc.h{background:#e2f6ea;color:#0d7a44}
-.tag{background:#e2f6ea;color:#0d7a44;border-radius:4px;padding:1px 5px;font-size:10px;font-weight:700;margin-left:4px}
-.d{font-size:11px;color:var(--mu);margin-top:2px}
-.pg{display:none}.pg.on{display:block}
-.cap{color:var(--mu);font-size:12px;margin:6px 0}
-details.fl{margin-bottom:8px}details.fl summary{cursor:pointer;color:var(--tx);padding:4px 0;font-weight:600}
-.seg{display:flex;gap:6px;margin:6px 0;flex-wrap:wrap}
-th.asc::after{content:" \25B2"}th.desc::after{content:" \25BC"}
-.hit{font-size:11px;color:var(--mu);margin:4px 0 8px}
-.hit b{color:var(--tx)}
-.bd{display:inline-block;font-size:9px;font-weight:700;border-radius:3px;padding:1px 4px;margin:0 1px;vertical-align:middle}
-.bd-oi{background:#e8f0fe;color:#1a56db}
-.bd-cvd{background:#f3e8ff;color:#7c3aed}
-.bd-liq{background:#fde8ea;color:#c0313e}
-.bd-lsr{background:#e2f6ea;color:#0d7a44}
-.sb{display:inline-flex;align-items:center;gap:2px}
-.sb i{display:block;width:4px;border-radius:1px;background:#eef0f3}
-.sb i.f{background:var(--gr)}
-.sb i.f.m{background:var(--yl)}
-.pump-star{color:var(--yl);font-size:14px;margin-left:4px}
-.long-bar{display:inline-flex;width:60px;height:8px;border-radius:4px;overflow:hidden;vertical-align:middle}
-.long-bar .l{background:var(--gr)}
-.long-bar .s{background:var(--rd)}
-.volcell{text-align:right;min-width:110px}
-.volcell .now{font-weight:700;font-size:13px}
-.volcell .mult{font-size:11px;font-weight:600;margin-left:3px}
-.volcell .base{font-size:10px;color:var(--mu)}
-.volcell.g .now{color:var(--gr)}
-.volcell.y .now{color:var(--yl)}
-.volcell.m .now{color:var(--mu)}
-.volcell .rise{color:var(--gr);font-weight:700;font-size:10px;margin-left:3px}
-/* Reset bar */
-.reset{margin-bottom:6px;font-size:11px;color:var(--mu)}
-.reset b{color:var(--tx)}
+.v{font-weight:700}
+.v.h{background:#e2f6ea;color:#0d7a44;border-radius:4px;padding:2px 6px}
+.v.w{color:var(--yl)}
+.v.n{color:var(--mu);font-weight:400}
+.rise{color:var(--gr);font-weight:700;font-size:10px;margin-left:3px}
+.pump-star{color:var(--yl);font-size:14px;margin-left:5px}
+.empty{text-align:center;color:var(--mu);padding:24px}
 </style>
 </head>
 <body>
 
-<div class="top">
-  <h1>pre-pump radar<span>volume window resets at 7pm Winnipeg</span></h1>
-  <div class="sp"></div>
-  <button id="ntf">&#128276; Alerts off</button>
-</div>
-
-<div class="src" id="src"></div>
-<div id="btc"></div>
-<div class="reset" id="resetbar"></div>
-
-<details class="fl" open><summary>Filters</summary><div class="bar">
+<div class="bar">
   <label>Search<input id="q" placeholder="BTC"></label>
-  <label>Market<select id="ty" style="width:125px"><option value="crypto">Crypto only</option><option value="all">Crypto + stocks</option></select></label>
-  <label>Refresh<select id="ri"><option value="30" selected>30s</option><option value="60">60s</option><option value="120">2min</option></select></label>
   <label>Min 24h vol ($M)<input id="md" type="number" value="2" min="0" step="0.5"></label>
-  <label>Abnormal ×: 15m<input id="x15" type="number" value="2" min="1" step="0.1"></label>
-  <label>Abnormal ×: 4h<input id="x4" type="number" value="1.5" min="1" step="0.1"></label>
-  <label>Abnormal ×: 24h<input id="x24" type="number" value="1.3" min="1" step="0.1"></label>
-  <label>Max 1h price %<input id="mm" type="number" value="3" min="0" step="0.5"></label>
-  <label>Max 15m price %<input id="m15" type="number" value="1.5" min="0.1" step="0.1"></label>
-  <label>Max 24h price %<input id="m24" type="number" value="8" min="1" step="1"></label>
-  <label>OI rise % 1h (min)<input id="mo" type="number" value="1" min="0" step="0.5"></label>
-  <label>OI Z-score (min)<input id="mz" type="number" value="1.5" min="0" step="0.5"></label>
-  <button id="rf">Refresh now</button>
-</div>
-</details>
-
-<div class="tabs" id="pages">
-  <button data-p="radar" class="on">&#9889; Pre-Pump Radar</button>
-  <button data-p="vol">&#128260; Volume</button>
-  <button data-p="lsr">&#9878;&#65039; Longs / Shorts</button>
-  <button data-p="liq">&#128165; Liquidation Risk</button>
-  <button data-p="flow">&#128200; Order Flow</button>
-  <button data-p="deriv">&#128202; Derivatives</button>
-  <button data-p="mkt">All Markets</button>
-  <button data-p="wl">&#9733; Watchlist</button>
+  <label>15m ×normal<input id="x15" type="number" value="2" min="1" step="0.1"></label>
+  <label>4h ×normal<input id="x4" type="number" value="1.5" min="1" step="0.1"></label>
+  <label>24h ×normal<input id="x24" type="number" value="1.3" min="1" step="0.1"></label>
+  <label>Max 1h px %<input id="mm" type="number" value="3" min="0" step="0.5"></label>
+  <label>Max 15m px %<input id="m15" type="number" value="1.5" min="0.1" step="0.1"></label>
+  <label>Max 24h px %<input id="m24" type="number" value="8" min="1" step="1"></label>
+  <label>OI 1h % min<input id="mo" type="number" value="1" min="0" step="0.5"></label>
+  <label>OI Z min<input id="mz" type="number" value="1.5" min="0" step="0.5"></label>
+  <button id="rf">Refresh</button>
 </div>
 
-<!-- PRE-PUMP RADAR -->
-<div class="pg on" id="pg-radar">
-<div class="cap" id="capradar"></div>
-<div class="hit" id="logstat"></div>
-<div class="wrap"><table style="min-width:1300px">
+<div class="wrap"><table>
 <thead><tr>
-<th></th><th data-sk="base">Coin</th><th data-sk="price">Price</th><th data-sk="p24">24h %</th>
-<th data-sk="score">Score</th><th data-sk="oiPct">OI 1h %</th><th data-sk="oiZ">OI Z</th>
-<th data-sk="v15">15m vol vs reset</th>
-<th data-sk="v4">4h vol vs reset</th>
-<th data-sk="v24">24h vol vs reset</th>
+<th data-sk="base">Coin</th>
+<th data-sk="price">Price</th>
+<th data-sk="p24">24h %</th>
+<th data-sk="v15">15m vol</th>
+<th data-sk="v4">4h vol</th>
+<th data-sk="v24">24h vol</th>
 <th data-sk="dv7">7d vol</th>
 <th data-sk="dv30">30d vol</th>
-<th data-sk="dv">24h total</th><th>Flags</th><th data-sk="mcap">Mkt cap</th>
-</tr></thead>
-<tbody id="tbradar"></tbody></table></div>
-<div class="cap" style="margin-top:8px;line-height:1.7">
-<b>How to read the volume columns:</b><br>
-&nbsp;&nbsp;&bull; <b>+N%</b> = how much bigger this window is vs the same-length window starting at the daily reset (7pm Winnipeg)<br>
-&nbsp;&nbsp;&bull; <b>(+N)</b> in <span class="g">green</span> after the number = N consecutive rising candles &mdash; volume is <b>still increasing</b>, not just spiked once<br>
-&nbsp;&nbsp;&bull; <b class="g">Green</b> = above your abnormal threshold &middot; <b class="yl">Yellow</b> = warm &middot; <b class="mu">Grey</b> = flat<br>
-&nbsp;&nbsp;&bull; Only coins where <b>15m AND 4h AND 24h</b> all exceed their abnormal × appear here
-</div>
-</div>
-
-<!-- VOLUME -->
-<div class="pg" id="pg-vol"><div class="cap" id="capv"></div><div class="wrap"><table style="min-width:1100px">
-<thead><tr>
-<th></th><th data-sk="base">Coin</th><th data-sk="price">Price</th><th data-sk="p24">24h %</th>
-<th data-sk="v15">15m vol</th><th data-sk="v4">4h vol</th><th data-sk="v24">24h vol</th>
-<th data-sk="dv7">7d vol</th><th data-sk="dv30">30d vol</th>
-<th data-sk="oiPct">1h OI chg</th><th data-sk="oi">Open interest</th>
-</tr></thead>
-<tbody id="tbv"></tbody></table></div></div>
-
-<!-- LONGS / SHORTS -->
-<div class="pg" id="pg-lsr"><div class="cap" id="caplsr"></div>
-<div class="wrap"><table style="min-width:900px">
-<thead><tr>
-<th></th><th data-sk="base">Coin</th><th data-sk="price">Price</th><th data-sk="p24">24h %</th>
-<th data-sk="longPct">Long %</th><th data-sk="shortPct">Short %</th>
-<th data-sk="lsr">L/S Ratio</th><th>Distribution</th><th data-sk="oiPct">OI 1h %</th><th data-sk="dv">24h vol</th>
-</tr></thead>
-<tbody id="tblsr"></tbody></table></div>
-</div>
-
-<!-- LIQUIDATION RISK -->
-<div class="pg" id="pg-liq"><div class="cap" id="capliq"></div>
-<div class="wrap"><table style="min-width:1000px">
-<thead><tr>
-<th></th><th data-sk="base">Coin</th><th data-sk="price">Price</th><th data-sk="p24">24h %</th>
-<th data-sk="liqScore">Risk Score</th><th data-sk="liqDir">Risk Direction</th>
-<th data-sk="oi">OI</th><th data-sk="fund">Funding</th>
-<th data-sk="dv">24h vol</th>
-</tr></thead>
-<tbody id="tbliq"></tbody></table></div>
-</div>
-
-<!-- ORDER FLOW -->
-<div class="pg" id="pg-flow"><div class="cap" id="capflow"></div>
-<div class="wrap"><table style="min-width:1000px">
-<thead><tr>
-<th></th><th data-sk="base">Coin</th><th data-sk="price">Price</th><th data-sk="p24">24h %</th>
-<th data-sk="cvd">CVD (1h)</th><th data-sk="taker">Taker buy %</th><th data-sk="cvdDiv">CVD/Price div</th>
-<th data-sk="lsr">Long/Short</th><th data-sk="v15">Vol 15m</th><th data-sk="dv">24h vol</th>
-</tr></thead>
-<tbody id="tbflow"></tbody></table></div>
-</div>
-
-<!-- DERIVATIVES -->
-<div class="pg" id="pg-deriv"><div class="cap" id="capderiv"></div>
-<div class="wrap"><table style="min-width:1000px">
-<thead><tr>
-<th></th><th data-sk="base">Coin</th><th data-sk="price">Price</th>
-<th data-sk="oi">Open Interest</th><th data-sk="oiPct">OI 1h %</th><th data-sk="oiZ">OI Z</th>
-<th data-sk="oiBy">OI by exchange</th>
-</tr></thead>
-<tbody id="tbderiv"></tbody></table></div>
-</div>
-
-<!-- MARKETS -->
-<div class="pg" id="pg-mkt"><div class="wrap"><table>
-<thead><tr>
-<th></th><th data-k="base">Coin</th><th data-k="price">Price</th><th data-k="p24">24h %</th>
-<th data-k="v15">Vol 15m</th><th data-k="v4">Vol 4h</th><th data-k="v24">Vol 24h</th>
-<th data-k="oiPct">OI 1h %</th><th data-k="dv">24h vol</th><th data-k="oi">OI</th><th data-k="score">Score</th>
+<th data-sk="oiPct">OI 1h %</th>
+<th data-sk="oiZ">OI Z</th>
+<th data-sk="mcap">Mkt cap</th>
 </tr></thead>
 <tbody id="tb"></tbody>
 </table></div>
-</div>
 
 <script>
 const HLA="https://api.hyperliquid.xyz/info",BF="https://fapi.binance.com/fapi/v1",BYA="https://api.bybit.com/v5/market",OKA="https://www.okx.com/api/v5";
 const BFD="https://fapi.binance.com/futures/data";
 const CG="https://api.coingecko.com/api/v3";
 const $=id=>document.getElementById(id);
-const coins=new Map(),status={},hold={},busy={};
-const LET={hl:"H",bn:"B",by:"Y",ok:"O"},NAME={hl:"Hyperliquid",bn:"Binance",by:"Bybit",ok:"OKX"};
-let page="radar",sk="score",sd=-1,left=0,lastR=0,btcP1=null,btcP24=null;
-let alerts=!!(window.Notification&&Notification.permission==="granted");
-let wl=new Set();
-try{wl=new Set(JSON.parse(localStorage.getItem("wl")||"[]"))}catch(e){}
-const saveWl=()=>{try{localStorage.setItem("wl",JSON.stringify([...wl]))}catch(e){}};
-
+const coins=new Map(),hold={},busy={};
+let sk="v15",sd=-1,lastR=0;
 const MCAP=new Map();let mcapAt=0;
 
-const FILTERS=["q","md","x15","x4","x24","mm","m15","m24","mo","mz","ri","ty"];
+const FILTERS=["q","md","x15","x4","x24","mm","m15","m24","mo","mz"];
 try{const s=JSON.parse(localStorage.getItem("filters")||"{}");for(const k of FILTERS)if(s[k]!=null&&$(k))$(k).value=s[k]}catch(e){}
 function saveFilters(){const s={};for(const k of FILTERS)if($(k))s[k]=$(k).value;try{localStorage.setItem("filters",JSON.stringify(s))}catch(e){}}
-
-// ---- Reset time: 7pm Winnipeg (CDT = UTC-5 during DST, CST = UTC-6 otherwise) ----
-// Winnipeg is America/Winnipeg. DST runs roughly Mar-Nov. Compute "minutes since last 7pm local".
-function winnipegOffsetHours(){
-  // Detect DST by checking what local hour UTC midnight maps to in Winnipeg
-  // Simple rule: 2nd Sunday March - 1st Sunday Nov = DST (UTC-5), else UTC-6
-  const now=new Date();
-  const y=now.getUTCFullYear();
-  const mar=new Date(Date.UTC(y,2,1));
-  const marSun=mar.getUTCDay();
-  const marSecondSun=marSun===0?8:15-marSun; // 2nd Sunday of March
-  const nov=new Date(Date.UTC(y,10,1));
-  const novSun=nov.getUTCDay();
-  const novFirstSun=novSun===0?1:8-novSun; // 1st Sunday of Nov
-  const dstStart=Date.UTC(y,2,marSecondSun,7,0,0); // 07:00 UTC = 02:00 local CST
-  const dstEnd=Date.UTC(y,10,novFirstSun,6,0,0);   // 06:00 UTC = 02:00 local CDT
-  const t=now.getTime();
-  return (t>=dstStart&&t<dstEnd)?-5:-6;
-}
-function lastResetMs(){
-  const off=winnipegOffsetHours();
-  const now=Date.now();
-  const dayMs=86400000;
-  // Find the most recent 19:00 Winnipeg = (19 - off) : 00 UTC
-  const utcHourOfReset=19-off; // 19 - (-5) = 24 → 00 UTC; 19 - (-6) = 25 → 01 UTC
-  // Simpler: convert now to Winnipeg local, floor to 19:00, convert back
-  const wpgNow=new Date(now+(off*3600000)+(new Date(now).getTimezoneOffset()*60000));
-  // Instead: compute the UTC ms of the most recent local 19:00 directly
-  const utcOffsetMs=off*3600000;
-  const localMs=now+utcOffsetMs;
-  const localDay=Math.floor(localMs/dayMs);
-  let resetLocalMs=localDay*dayMs+19*3600000;
-  if(resetLocalMs>localMs)resetLocalMs-=dayMs;
-  return resetLocalMs-utcOffsetMs;
-}
-function resetLabel(){
-  const r=lastResetMs();
-  const d=new Date(r);
-  // format in Winnipeg local
-  const off=winnipegOffsetHours();
-  const local=new Date(r+off*3600000);
-  const hh=String(local.getUTCHours()).padStart(2,"0");
-  const mm=String(local.getUTCMinutes()).padStart(2,"0");
-  const ago=Math.floor((Date.now()-r)/60000);
-  const hours=Math.floor(ago/60), mins=ago%60;
-  return `Last reset: ${hh}:${mm} Winnipeg (${hours}h ${mins}m ago). All % compare the current window to the window starting at this time.`;
-}
-
-const SIGLOG=[];
-try{const s=JSON.parse(localStorage.getItem("siglog")||"[]");if(Array.isArray(s))for(const x of s)SIGLOG.push(x)}catch(e){}
-function logSignals(all){
-  const now=Date.now(),m=new Map(all.map(o=>[o.key,o]));
-  let changed=false;
-  for(const o of all){
-    if(!o.pre)continue;
-    const last=SIGLOG.find(x=>x.k===o.key&&now-x.t<3600e3);
-    if(last)continue;
-    SIGLOG.push({k:o.key,b:o.base,t:now,p:o.price,v15:o.v15,v4:o.v4,oi:o.oiPct,oiZ:o.oiZ,cvd:o.cvd,r1:null,r4:null,r24:null,rNow:null});
-    changed=true;
-  }
-  for(const s of SIGLOG){
-    const o=m.get(s.k);
-    if(!o||!o.price||!s.p)continue;
-    const age=(now-s.t)/3600e3,ret=(o.price/s.p-1)*100;
-    if(age<24)s.rNow=ret;
-    if(age>=1&&s.r1==null){s.r1=ret;changed=true}
-    if(age>=4&&s.r4==null){s.r4=ret;changed=true}
-    if(age>=24&&s.r24==null){s.r24=ret;changed=true}
-  }
-  if(SIGLOG.length>500)SIGLOG.splice(0,SIGLOG.length-500);
-  if(changed)try{localStorage.setItem("siglog",JSON.stringify(SIGLOG))}catch(e){}
-}
 
 async function get(url,opt){
   const r=await fetch(url,opt);
@@ -321,7 +102,7 @@ async function loadInfo(){
     meta.ok||get(OKA+"/public/instruments?instType=SWAP").then(d=>{meta.ok=new Map(d.data.map(x=>[x.instId,x]))}).catch(()=>{})
   ]);
 }
-function up(b,tf){const k=b+(tf?"~":"");let o=coins.get(k);if(!o){o={base:b,key:k,tf:!!tf,ex:{},at:0,hist:0};coins.set(k,o)}return o}
+function up(b,tf){const k=b+(tf?"~":"");let o=coins.get(k);if(!o){o={base:b,key:k,tf:!!tf,ex:{},at:0};coins.set(k,o)}return o}
 
 async function loadMcap(){
   if(Date.now()-mcapAt<300000)return;
@@ -340,16 +121,15 @@ const loaders={
       if(u.isDelisted||!c[i])return;
       const [b,mu]=hlNorm(u.name),x=c[i],px=+x.markPx,o=up(b,u.name.includes(":")||BL.has(b));
       o.hlName=u.name;
-      o.ex.hl={price:px/mu,dv:+x.dayNtlVlm,p24:+x.prevDayPx?(px/+x.prevDayPx-1)*100:null,oi:+x.openInterest*px,fund8:+x.funding*800};n++;
+      o.ex.hl={price:px/mu,dv:+x.dayNtlVlm,p24:+x.prevDayPx?(px/+x.prevDayPx-1)*100:null,oi:+x.openInterest*px};n++;
     });return n;
   },
   async bn(){
-    const [t,f]=await Promise.all([get(BF+"/ticker/24hr"),get(BF+"/premiumIndex")]);
-    const fr={};f.forEach(x=>fr[x.symbol]=+x.lastFundingRate*100);let n=0;
+    const t=await get(BF+"/ticker/24hr");let n=0;
     t.forEach(x=>{
       if(!x.symbol.endsWith("USDT")||x.symbol.includes("_"))return;
       const [b,m]=norm(x.symbol),o=up(b,tfBn(x.symbol,b));o.bnSym=x.symbol;
-      o.ex.bn={price:+x.lastPrice/m,dv:+x.quoteVolume,p24:+x.priceChangePercent,fund8:fr[x.symbol]};n++;
+      o.ex.bn={price:+x.lastPrice/m,dv:+x.quoteVolume,p24:+x.priceChangePercent};n++;
     });return n;
   },
   async by(){
@@ -357,7 +137,7 @@ const loaders={
     d.result.list.forEach(x=>{
       if(!x.symbol.endsWith("USDT")||x.symbol.includes("-"))return;
       const [b,m]=norm(x.symbol),o=up(b,tfBy(x.symbol,b));o.bySym=x.symbol;
-      o.ex.by={price:+x.lastPrice/m,dv:+x.turnover24h,p24:+x.price24hPcnt*100,oi:+x.openInterestValue,fund8:+x.fundingRate*100};n++;
+      o.ex.by={price:+x.lastPrice/m,dv:+x.turnover24h,p24:+x.price24hPcnt*100,oi:+x.openInterestValue};n++;
     });return n;
   },
   async ok(){
@@ -366,67 +146,59 @@ const loaders={
     t.data.forEach(x=>{
       if(!x.instId.endsWith("-USDT-SWAP"))return;
       const [b,m]=norm(x.instId.split("-")[0]+"USDT"),o=up(b,tfOk(x.instId,b)),last=+x.last;
-      o.ex.ok={price:last/m,dv:+x.volCcy24h*last,p24:+x.open24h?(last/+x.open24h-1)*100:null,oi:om[x.instId],fund8:null};n++;
+      o.ex.ok={price:last/m,dv:+x.volCcy24h*last,p24:+x.open24h?(last/+x.open24h-1)*100:null,oi:om[x.instId]};n++;
     });return n;
   }
 };
-
-function renderSrc(){
-  $("src").innerHTML=Object.keys(NAME).map(k=>{
-    const s=status[k];const cls=s==="err"?"err":(s>0?"ok":"");
-    const txt=s==="err"?"error":(s>0?s+" pairs":"loading...");
-    return `<b class="${cls}">${NAME[k]}: ${txt}</b>`;
-  }).join("");
-}
 
 async function loadAll(){
   const n0=[meta.bn,meta.by,meta.ok].filter(Boolean).length;
   await Promise.all([loadInfo(),loadMcap()]);
   if([meta.bn,meta.by,meta.ok].filter(Boolean).length>n0&&coins.size)coins.clear();
-  await Promise.all(Object.keys(loaders).map(k=>loaders[k]().then(n=>{status[k]=n}).catch(e=>{status[k]="err"})));
-  renderSrc();
+  await Promise.all(Object.keys(loaders).map(k=>loaders[k]().catch(()=>{})));
 }
 
 function agg(o){
   const e=Object.entries(o.ex).map(x=>x[1]);
-  o.n=e.length;
   o.dv=e.reduce((a,x)=>a+(x.dv||0),0);
   const oi=e.filter(x=>x.oi!=null);o.oi=oi.length?oi.reduce((a,x)=>a+x.oi,0):null;
-  const f=e.filter(x=>x.fund8!=null&&!isNaN(x.fund8));o.fund=f.length?f.reduce((a,x)=>a+x.fund8,0)/f.length:null;
   const pick=k=>{for(const s of ["bn","by","hl","ok"])if(o.ex[s]&&o.ex[s][k]!=null)return o.ex[s][k];return null};
   o.price=pick("price");o.p24=pick("p24");
   o.src=o.bnSym?"bn":o.bySym?"by":o.hlName?"hl":null;
-  o.oiBy={};
-  for(const k of["bn","by","hl","ok"])if(o.ex[k]&&o.ex[k].oi)o.oiBy[k]=o.ex[k].oi;
   o.mcap=MCAP.get(o.base)||null;
 }
 
-// ============================================================
-// VOLUME vs the daily reset (7pm Winnipeg).
-// We fetch 15m candles covering >= 30 days, then:
-//    - slice everything from the last reset → "current"
-//    - slice the same-length window just before → "previous"
-//    - ratio = current / previous
-//    - rise = consecutive 15m candles at the end that keep increasing
-// ============================================================
-const cb={ // candle lookbacks per source (needed to cover 30 days)
-  bn:2000,  // Binance max 1500 per call, we use 2 calls below
-  by:1000,  // Bybit max 1000
-  hl:500    // HL max ~500, we get ~5 days only (documented)
-};
+// Reset = 19:00 America/Winnipeg
+function winnipegOffsetHours(){
+  const now=new Date();const y=now.getUTCFullYear();
+  const mar=new Date(Date.UTC(y,2,1));const marSun=mar.getUTCDay();
+  const marSecondSun=marSun===0?8:15-marSun;
+  const nov=new Date(Date.UTC(y,10,1));const novSun=nov.getUTCDay();
+  const novFirstSun=novSun===0?1:8-novSun;
+  const dstStart=Date.UTC(y,2,marSecondSun,7,0,0);
+  const dstEnd=Date.UTC(y,10,novFirstSun,6,0,0);
+  const t=now.getTime();
+  return (t>=dstStart&&t<dstEnd)?-5:-6;
+}
+function lastResetMs(){
+  const off=winnipegOffsetHours();
+  const now=Date.now();const dayMs=86400000;
+  const utcOffsetMs=off*3600000;
+  const localMs=now+utcOffsetMs;
+  const localDay=Math.floor(localMs/dayMs);
+  let resetLocalMs=localDay*dayMs+19*3600000;
+  if(resetLocalMs>localMs)resetLocalMs-=dayMs;
+  return resetLocalMs-utcOffsetMs;
+}
 
 async function fetchCandles(src,o){
   if(src==="bn"){
-    // two 1000-candle calls = ~20.8 days at 15m each. That's enough for 7d and almost 30d.
     const [a,b]=await Promise.all([
       get(`${BF}/klines?symbol=${o.bnSym}&interval=15m&limit=1000`),
       get(`${BF}/klines?symbol=${o.bnSym}&interval=15m&endTime=${Date.now()-1000*15*60*1000}&limit=1000`).catch(()=>[])
     ]);
-    const rows=[...b,...a]; // b is older, a is newer
-    const seen=new Set();
-    return rows.filter(x=>{
-      const t=x[0];if(seen.has(t))return false;seen.add(t);return true;
-    }).map(x=>({t:+x[0],q:+x[7]}));
+    const rows=[...b,...a];const seen=new Set();
+    return rows.filter(x=>{const t=x[0];if(seen.has(t))return false;seen.add(t);return true}).map(x=>({t:+x[0],q:+x[7]}));
   }
   if(src==="by"){
     const r=await get(`${BYA}/kline?category=linear&symbol=${o.bySym}&interval=15&limit=1000`);
@@ -441,74 +213,23 @@ async function fetchCandles(src,o){
 }
 
 function computeVolume(o,candles){
-  if(!candles||candles.length<96)return;
-  const r=lastResetMs();
-  // Find index where candle.t >= r (current window)
-  const iReset=candles.findIndex(c=>c.t>=r);
-  if(iReset<0)return;
-  const dayMs=86400000;
-  // Cutoffs (in ms)
-  const tNow=Date.now();
-  const w15=tNow-15*60*1000;
-  const w4 =tNow-4*3600*1000;
-  const w24=tNow-24*3600*1000;
-  const w7 =tNow-7*dayMs;
-  const w30=tNow-30*dayMs;
-
-  const sumRange=(from,to)=>{
-    let s=0;
-    for(const c of candles){if(c.t>=from&&c.t<to)s+=c.q}
-    return s;
-  };
-
-  // Current short windows
-  o.qv15=sumRange(w15,tNow);
-  o.qv4 =sumRange(w4,tNow);
-  o.qv24=sumRange(w24,tNow);
-  o.qv7 =sumRange(w7,tNow);
-  o.qv30=sumRange(w30,tNow);
-
-  // Previous same-length windows (for %)
-  o.bv15=sumRange(w15-(w15-r?0:w15), w15)||sumRange(w15-15*60*1000,w15);
-  o.bv4 =sumRange(w4-4*3600*1000,w4);
-  o.bv24=sumRange(w24-24*3600*1000,w24);
-
-  // Better: compare to same-length window ENDING at reset
-  o.bv15Reset=sumRange(r,r+15*60*1000);
-  o.bv4Reset =sumRange(r,r+4*3600*1000);
-  o.bv24Reset=sumRange(r,r+24*3600*1000);
-
-  const ratio=(cur,base)=>(base>0)?(cur/base):null;
-  // "vs reset" ratio: current short window vs the same-length window that opened at the reset
-  o.r15=ratio(o.qv15,o.bv15Reset||o.bv15);
-  o.r4 =ratio(o.qv4, o.bv4Reset ||o.bv4);
-  o.r24=ratio(o.qv24,o.bv24Reset||o.bv24);
-
-  // Percent version
+  if(!candles||candles.length<20)return;
+  const r=lastResetMs(),tNow=Date.now(),dayMs=86400000;
+  const sum=(from,to)=>{let s=0;for(const c of candles)if(c.t>=from&&c.t<to)s+=c.q;return s};
+  const w15=tNow-15*60*1000,w4=tNow-4*3600*1000,w24=tNow-24*3600*1000;
+  o.qv15=sum(w15,tNow);o.qv4=sum(w4,tNow);o.qv24=sum(w24,tNow);
+  o.qv7=sum(tNow-7*dayMs,tNow);o.qv30=sum(tNow-30*dayMs,tNow);
+  o.dv7=o.qv7;o.dv30=o.qv30;
+  const b15=sum(r,r+15*60*1000),b4=sum(r,r+4*3600*1000),b24=sum(r,r+24*3600*1000);
+  o.r15=b15>0?o.qv15/b15:null;
+  o.r4 =b4 >0?o.qv4 /b4 :null;
+  o.r24=b24>0?o.qv24/b24:null;
   o.v15=o.r15!=null?(o.r15-1)*100:null;
   o.v4 =o.r4 !=null?(o.r4 -1)*100:null;
   o.v24=o.r24!=null?(o.r24-1)*100:null;
-
-  // Consecutive rising 15m candles at the tail
   let st=0;
-  for(let i=candles.length-1;i>=1;i--){
-    if(candles[i].q>candles[i-1].q)st++;
-    else break;
-    if(st>30)break;
-  }
+  for(let i=candles.length-1;i>=1&&st<30;i--){if(candles[i].q>candles[i-1].q)st++;else break}
   o.vs=st;
-
-  // 7d / 30d totals
-  o.dv7=o.qv7;
-  o.dv30=o.qv30;
-
-  // For "vs 7d avg daily" and "vs 30d avg daily"
-  const days7=Math.min(7,(tNow-w7)/dayMs);
-  const days30=Math.min(30,(tNow-w30)/dayMs);
-  o.avg7 =days7>0?o.qv7/days7:null;
-  o.avg30=days30>0?o.qv30/days30:null;
-  o.r7 =o.avg7?(o.qv24/o.avg7):null;   // today's 24h vs 7d daily average
-  o.r30=o.avg30?(o.qv24/o.avg30):null;
 }
 
 const ofn={
@@ -519,22 +240,20 @@ function setOi(o,a){
   if(a.length<5||!a[0])return;
   let st=0;for(let i=a.length-1;i>=1;i--){if(a[i]>a[i-1])st++;else break}
   o.os=st;o.oiPct=(a[a.length-1]/a[0]-1)*100;
-  const changes=[];for(let i=1;i<a.length;i++)changes.push(a[i]-a[i-1]);
-  if(changes.length>=3){
-    const mu=changes.reduce((s,x)=>s+x,0)/changes.length;
-    const sg=Math.sqrt(changes.reduce((s,x)=>s+(x-mu)**2,0)/changes.length);
-    o.oiZ=sg>0?(changes[changes.length-1]-mu)/sg:0;
+  const ch=[];for(let i=1;i<a.length;i++)ch.push(a[i]-a[i-1]);
+  if(ch.length>=3){
+    const mu=ch.reduce((s,x)=>s+x,0)/ch.length;
+    const sg=Math.sqrt(ch.reduce((s,x)=>s+(x-mu)**2,0)/ch.length);
+    o.oiZ=sg>0?(ch[ch.length-1]-mu)/sg:0;
   }
 }
 async function tickOi(){
   if(busy.oi||Date.now()<(hold.oi||0))return;
-  const now=Date.now();let best=null,bs=-1;
+  const now=Date.now(),md=(+$("md").value||0)*1e6;let best=null,bs=-1;
   for(const o of coins.values()){
-    if(o.tf||!(o.src==="bn"||o.src==="by")||o.dv<(+$("md").value||0)*1e6)continue;
-    const age=now-(o.oat||0);
-    if(o.oat&&age<90000)continue;
-    const sc=o.oat?age:1e12+o.dv;
-    if(sc>bs){bs=sc;best=o}
+    if(o.tf||!(o.src==="bn"||o.src==="by")||o.dv<md)continue;
+    const age=now-(o.oat||0);if(o.oat&&age<90000)continue;
+    const sc=o.oat?age:1e12+o.dv;if(sc>bs){bs=sc;best=o}
   }
   if(!best)return;
   busy.oi=true;
@@ -543,121 +262,20 @@ async function tickOi(){
   busy.oi=false;
 }
 
-const flowFns={
-  bn:{
-    taker:async o=>(await get(`${BFD}/takerlongshortRatio?symbol=${o.bnSym}&period=1h&limit=6`)).map(x=>({buy:+x.buyVol,sell:+x.sellVol,ratio:+x.buySellRatio})),
-    lsr:async o=>(await get(`${BFD}/globalLongShortAccountRatio?symbol=${o.bnSym}&period=1h&limit=1`))[0]
-  }
-};
-function calcFlow(o,tk,ls){
-  if(tk&&tk.length){
-    let buy=0,sell=0;
-    for(const x of tk){buy+=x.buy;sell+=x.sell}
-    o.cvd=(buy-sell)/(buy+sell)*100;
-    o.taker=buy/(buy+sell)*100;
-  }
-  if(ls){
-    o.lsr=+ls.longShortRatio;
-    o.longPct=+ls.longAccount*100;
-    o.shortPct=+ls.shortAccount*100;
-  }
-}
-async function tickFlow(src){
-  const k="f"+src;
+async function tickHist(src){
+  const k="h"+src;
   if(busy[k]||Date.now()<(hold[k]||0))return;
   const md=(+$("md").value||0)*1e6,now=Date.now();let best=null,bs=-1;
   for(const o of coins.values()){
     if(o.src!==src||o.dv<md||o.tf)continue;
-    const age=now-(o.fa||0);
-    if(o.fa&&age<120000)continue;
-    const sc=o.fa?age:1e12+o.dv;
-    if(sc>bs){bs=sc;best=o}
-  }
-  if(!best||!flowFns[src])return;
-  busy[k]=true;
-  try{
-    const [tk,ls]=await Promise.all([
-      flowFns[src].taker(best).catch(()=>null),
-      flowFns[src].lsr(best).catch(()=>null)
-    ]);
-    calcFlow(best,tk,ls);
-    best.fa=Date.now();
-  }catch(e){
-    if(String(e.message)==="429")hold[k]=Date.now()+30000;else best.fa=Date.now();
-  }
-  busy[k]=false;
-}
-
-// Long-history candle fetcher (round-robin, slow because it's heavy)
-async function tickHist(src){
-  if(busy["h"+src]||Date.now()<(hold["h"+src]||0))return;
-  const md=(+$("md").value||0)*1e6,now=Date.now();let best=null,bs=-1;
-  for(const o of coins.values()){
-    if(o.src!==src||o.dv<md||o.tf)continue;
-    const age=now-(o.ha||0);
-    if(o.ha&&age<1800000)continue; // refresh each coin max every 30 min
-    const sc=o.ha?age:1e12+o.dv;
-    if(sc>bs){bs=sc;best=o}
+    const age=now-(o.ha||0);if(o.ha&&age<1800000)continue;
+    const sc=o.ha?age:1e12+o.dv;if(sc>bs){bs=sc;best=o}
   }
   if(!best)return;
-  busy["h"+src]=true;
-  try{
-    const k=await fetchCandles(src,best);
-    computeVolume(best,k);
-    best.ha=Date.now();
-  }catch(e){
-    if(String(e.message)==="429")hold["h"+src]=Date.now()+60000;else best.ha=Date.now();
-  }
-  busy["h"+src]=false;
-}
-
-// SCORE
-function score(o){
-  let s=0;
-  if(o.r15!=null)s+=o.r15>=3?2:o.r15>=2?1:0;
-  if(o.r4 !=null)s+=o.r4 >=2?2:o.r4 >=1.5?1:0;
-  if(o.r24!=null)s+=o.r24>=1.5?2:o.r24>=1.3?1:0;
-  if(o.vs!=null&&o.vs>=3)s+=1;
-  if(o.oiPct!=null){
-    if(o.oiPct>=3)s+=2;
-    else if(o.oiPct>=1)s+=1;
-    if(o.os>=3)s+=1;
-  }
-  if(o.oiZ!=null&&o.oiZ>=2)s+=1;
-  if(o.cvd!=null){
-    if(o.cvd>5)s+=2;
-    else if(o.cvd>2)s+=1;
-  }
-  o.score=Math.min(s,12);
-  o.pre=false;
-}
-
-function computePre(o){
-  const x15=+$("x15").value||2, x4=+$("x4").value||1.5, x24=+$("x24").value||1.3;
-  const m15v=+$("m15").value||1.5, mm=+$("mm").value||3, m24v=+$("m24").value||8;
-  const mo=+$("mo").value||1, mzv=+$("mz").value||1.5;
-  // ALL THREE abnormal volume gates must pass
-  if(!(o.r15!=null&&o.r15>=x15))return;
-  if(!(o.r4 !=null&&o.r4 >=x4 ))return;
-  if(!(o.r24!=null&&o.r24>=x24))return;
-  // price not moved yet
-  if(o.p15!=null&&(o.p15>m15v||o.p15<-1))return;
-  if(o.p1!=null&&(o.p1>mm||o.p1<-1.5))return;
-  if(o.p24!=null&&o.p24>m24v)return;
-  if(o.oiPct!=null&&o.oiPct<mo)return;
-  if(o.oiZ!=null&&o.oiZ<mzv)return;
-  o.pre=true;
-}
-
-function liqRisk(o){
-  if(o.oi==null||o.price==null)return {score:0,dir:null};
-  let longRisk=0, shortRisk=0;
-  if(o.oi>1e8)longRisk+=2; else if(o.oi>2e7)longRisk+=1;
-  if(o.fund!=null){
-    if(o.fund>0.05)longRisk+=2; else if(o.fund>0.02)longRisk+=1;
-    else if(o.fund<-0.03)shortRisk+=2; else if(o.fund<-0.01)shortRisk+=1;
-  }
-  return {score:longRisk+shortRisk,dir:longRisk>shortRisk?"longs at risk":shortRisk>longRisk?"shorts at risk":null};
+  busy[k]=true;
+  try{computeVolume(best,await fetchCandles(src,best));best.ha=Date.now()}
+  catch(e){if(String(e.message)==="429")hold[k]=Date.now()+60000;else best.ha=Date.now()}
+  busy[k]=false;
 }
 
 const fm=v=>v==null||isNaN(v)?"-":v>=1e12?(v/1e12).toFixed(2)+"T":v>=1e9?(v/1e9).toFixed(2)+"B":v>=1e6?(v/1e6).toFixed(1)+"M":v>=1e3?(v/1e3).toFixed(0)+"K":v.toFixed(0);
@@ -667,248 +285,82 @@ function link(o){
   if(o.bySym)return "https://www.tradingview.com/chart/?symbol=BYBIT:"+o.bySym+".P";
   return "https://app.hyperliquid.xyz/trade/"+(o.hlName||o.base);
 }
-function scoreBar(s){
-  const n=6,filled=Math.round(s/12*n);
-  let h="";
-  for(let i=0;i<n;i++)h+=`<i class="${i<filled?(filled>=5?"f h":filled>=3?"f m":"f"):""}" style="height:${8+i*2}px"></i>`;
-  return `<span class="sb">${h}</span> <b>${s}</b>`;
-}
-
-// Volume cell: shows % vs reset, and (+N) if volume is still rising
-function volCell(o,pct,rise){
+function vc(pct,rise){
   if(pct==null)return '<span class="mu">...</span>';
-  const v=pct;
-  const cls=v>=100?"h":v>=30?"w":v<0?"n":"";
-  const riseTxt=(rise!=null&&rise>=3)?`<span class="rise">(+${rise})</span>`:"";
-  return `<span class="v ${cls}">${v>=0?"+":""}${Math.round(v)}%</span>${riseTxt}<div class="d">${o.r15!=null?"x"+o.r15.toFixed(2):""}</div>`;
+  const cls=pct>=100?"h":pct>=30?"w":"n";
+  const rt=(rise!=null&&rise>=3)?`<span class="rise">(+${rise})</span>`:"";
+  return `<span class="v ${cls}">${pct>=0?"+":""}${Math.round(pct)}%</span>${rt}`;
 }
 
 function render(){
   lastR=Date.now();
-  const vis=page==="wl"?"mkt":page;
   const q=$("q").value.trim().toUpperCase(),md=(+$("md").value||0)*1e6;
-  const tfOn=$("ty").value==="all";
+  const x15=+$("x15").value||2,x4=+$("x4").value||1.5,x24=+$("x24").value||1.3;
+  const mm=+$("mm").value||3,m15v=+$("m15").value||1.5,m24v=+$("m24").value||8;
+  const mo=+$("mo").value||1,mzv=+$("mz").value||1.5;
 
-  $("resetbar").innerHTML=resetLabel();
-
-  const all=[...coins.values()].filter(o=>tfOn||!o.tf);
+  const all=[...coins.values()].filter(o=>!o.tf);
   all.forEach(o=>{
-    agg(o);score(o);computePre(o);
+    agg(o);
+    o.pre=
+      o.r15!=null&&o.r15>=x15 &&
+      o.r4 !=null&&o.r4 >=x4  &&
+      o.r24!=null&&o.r24>=x24 &&
+      (o.p15==null||(o.p15<=m15v&&o.p15>=-1)) &&
+      (o.p1 ==null||(o.p1 <=mm &&o.p1 >=-1.5)) &&
+      (o.p24==null||o.p24<=m24v) &&
+      (o.oiPct==null||o.oiPct>=mo) &&
+      (o.oiZ ==null||o.oiZ >=mzv);
     o.pumping=(o.vs!=null&&o.vs>=3)||(o.r15!=null&&o.r4!=null&&o.r15>=2&&o.r4>=1.5);
-    const lr=liqRisk(o);o.liqScore=lr.score;o.liqDir=lr.dir;
-    if(o.pre&&!o.was&&alerts&&o.at&&Date.now()-(o.nt||0)>1800e3&&window.Notification&&Notification.permission==="granted"){
-      o.nt=Date.now();
-      try{new Notification(o.base+" PRE-PUMP",{body:`15m x${(o.r15??0).toFixed(1)} | 4h x${(o.r4??0).toFixed(1)} | 24h x${(o.r24??0).toFixed(1)} | OI ${(o.oiPct??0).toFixed(1)}%`})}catch(e){}
-    }
-    o.was=o.pre;
   });
-  logSignals(all);
 
-  if(vis==="radar"){
-    const radar=all.filter(o=>o.pre).sort((a,b)=>b.score-a.score||b.dv-a.dv).slice(0,60);
-    $("tbradar").innerHTML=radar.map(o=>{
-      const flags=[];
-      if(o.os>=3)flags.push('<span class="bd bd-oi">OI\u2191'+o.os+'</span>');
-      if(o.cvd>2)flags.push('<span class="bd bd-cvd">CVD+</span>');
-      if(o.lsr!=null&&o.lsr>2)flags.push('<span class="bd bd-lsr">LSR '+o.lsr.toFixed(1)+'</span>');
-      if(o.liqScore>=4)flags.push('<span class="bd bd-liq">LIQ\u26A0</span>');
-      const star=o.pumping?'<span class="pump-star" title="Volume continues pumping">&#9733;</span>':'';
-      const vc=(pct,rise)=>(pct==null)?'<span class="mu">...</span>':`<span class="v ${pct>=100?"h":pct>=30?"w":"n"}">${pct>=0?"+":""}${Math.round(pct)}%${(rise!=null&&rise>=3)?`<span class="rise">(+${rise})</span>`:""}</span>`;
-      return `<tr><td class="s ${wl.has(o.key)?"on":""}" data-s="${o.key}">&#9733;</td>
-<td><a href="#" data-c="${o.key}">${o.base}</a>${star}${o.tf?'<span class="tag" style="background:#7d8b99">STOCK</span>':""}</td>
+  let arr=all.filter(o=>o.dv>=md&&o.pre&&(!q||o.base.includes(q)));
+  arr.sort((a,b)=>{
+    const x=a[sk],y=b[sk];
+    if(sk==="base")return sd*(x<y?-1:1);
+    const d=(x??-1e12)-(y??-1e12);
+    return d?sd*d:(b.dv-a.dv);
+  });
+
+  $("tb").innerHTML=arr.map(o=>{
+    const star=o.pumping?'<span class="pump-star">&#9733;</span>':'';
+    return `<tr>
+<td><a href="#" data-c="${o.key}">${o.base}</a>${star}</td>
 <td>${fp(o.price)}</td>
 <td class="${o.p24>=0?"g":"r"}">${o.p24==null?"-":o.p24.toFixed(2)+"%"}</td>
-<td>${scoreBar(o.score)}</td>
-<td class="${o.oiPct>=1?"g":"mu"}">${o.oiPct==null?"...":(o.oiPct>=0?"+":"")+o.oiPct.toFixed(2)+"%"}${o.os!=null?" ("+o.os+"\u2191)":""}</td>
-<td class="${o.oiZ>=2?"g":o.oiZ>=1?"yl":"mu"}">${o.oiZ==null?"...":o.oiZ.toFixed(1)}</td>
 <td>${vc(o.v15,o.vs)}</td>
 <td>${vc(o.v4,null)}</td>
 <td>${vc(o.v24,null)}</td>
 <td>$${fm(o.dv7)}</td>
 <td>$${fm(o.dv30)}</td>
-<td>$${fm(o.dv)}</td>
-<td>${flags.join(" ")}</td>
-<td>${o.mcap?"$"+fm(o.mcap):'<span class="mu">-</span>'}</td></tr>`;
-    }).join("")||'<tr><td colspan="15" style="text-align:center;color:#7a8392;padding:20px">No pre-pump signals right now.<br><small>Only coins where 15m, 4h and 24h volume all exceed the abnormal thresholds appear here.</small></td></tr>';
-    $("capradar").textContent=`Pre-pump candidates: ${radar.length}  |  15m AND 4h AND 24h volume all above threshold, price flat, OI rising  |  \u2605 next to a coin = volume is still expanding`;
-    const done=SIGLOG.filter(s=>s.r1!=null);
-    const w1=done.filter(s=>s.r1>0).length;
-    const avg1=done.length?done.reduce((a,s)=>a+s.r1,0)/done.length:0;
-    $("logstat").innerHTML=`Signal log: <b>${SIGLOG.length}</b> logged &middot; 1h: <b>${done.length}</b> resolved (win ${done.length?(w1/done.length*100).toFixed(0):"-"}%, avg ${avg1.toFixed(2)}%)`;
-  }
-
-  if(vis==="vol"){
-    const vl=all.filter(o=>o.dv>=md&&o.r15!=null).sort((a,b)=>(b.r15??0)-(a.r15??0)).slice(0,200);
-    $("tbv").innerHTML=vl.map(o=>{
-      const star=o.pumping?'<span class="pump-star">&#9733;</span>':'';
-      const vc=(pct,rise)=>(pct==null)?'<span class="mu">...</span>':`<span class="v ${pct>=100?"h":pct>=30?"w":"n"}">${pct>=0?"+":""}${Math.round(pct)}%${(rise!=null&&rise>=3)?`<span class="rise">(+${rise})</span>`:""}</span>`;
-      return `<tr><td class="s ${wl.has(o.key)?"on":""}" data-s="${o.key}">&#9733;</td>
-<td><a href="#" data-c="${o.key}">${o.base}</a>${star}</td>
-<td>${fp(o.price)}</td>
-<td class="${o.p24>=0?"g":"r"}">${o.p24==null?"-":o.p24.toFixed(2)+"%"}</td>
-<td>${vc(o.v15,o.vs)}</td><td>${vc(o.v4,null)}</td><td>${vc(o.v24,null)}</td>
-<td>$${fm(o.dv7)}</td><td>$${fm(o.dv30)}</td>
-<td class="${o.oiPct>=1?"g":"mu"}">${o.oiPct==null?"...":(o.oiPct>=0?"+":"")+o.oiPct.toFixed(1)+"%"}${o.os!=null?" ("+o.os+"\u2191)":""}</td>
-<td>$${fm(o.oi)}</td></tr>`;
-    }).join("")||'<tr><td colspan="11" style="text-align:center;color:#7a8392;padding:14px">Volume history is loading. Give it a few minutes.</td></tr>';
-    $("capv").textContent=`Volume vs the same-length window starting at the daily reset (7pm Winnipeg). (+N) = N rising candles in a row.`;
-  }
-
-  if(vis==="lsr"){
-    const ls=all.filter(o=>o.dv>=md&&o.longPct!=null).sort((a,b)=>b.lsr-a.lsr).slice(0,100);
-    $("tblsr").innerHTML=ls.map(o=>{
-      const star=o.pumping?'<span class="pump-star">&#9733;</span>':'';
-      const lw=Math.round(o.longPct);
-      const bar=`<span class="long-bar"><span class="l" style="width:${lw}%"></span><span class="s" style="width:${100-lw}%"></span></span>`;
-      return `<tr><td class="s ${wl.has(o.key)?"on":""}" data-s="${o.key}">&#9733;</td>
-<td><a href="#" data-c="${o.key}">${o.base}</a>${star}</td>
-<td>${fp(o.price)}</td>
-<td class="${o.p24>=0?"g":"r"}">${o.p24==null?"-":o.p24.toFixed(2)+"%"}</td>
-<td class="${o.longPct>70?"r":o.longPct<40?"g":""}">${o.longPct.toFixed(1)}%</td>
-<td class="${o.shortPct>60?"g":o.shortPct<30?"r":""}">${o.shortPct.toFixed(1)}%</td>
-<td><b>${o.lsr.toFixed(2)}</b></td><td>${bar}</td>
-<td class="${o.oiPct>=1?"g":"mu"}">${o.oiPct==null?"...":(o.oiPct>=0?"+":"")+o.oiPct.toFixed(1)+"%"}${o.os!=null?" ("+o.os+"\u2191)":""}</td>
-<td>$${fm(o.dv)}</td></tr>`;
-    }).join("")||'<tr><td colspan="10" style="text-align:center;color:#7a8392;padding:16px">Long/short data fills in over a few minutes.</td></tr>';
-    $("caplsr").textContent=`Long vs short account ratio (Binance). L/S > 2.0 = crowded longs. L/S < 0.5 = crowded shorts.`;
-  }
-
-  if(vis==="liq"){
-    const lq=all.filter(o=>o.dv>=md).sort((a,b)=>b.liqScore-a.liqScore||b.dv-a.dv).slice(0,100);
-    $("tbliq").innerHTML=lq.map(o=>{
-      const star=o.pumping?'<span class="pump-star">&#9733;</span>':'';
-      const scC=o.liqScore>=5?'r':o.liqScore>=3?'yl':'mu';
-      const dirC=o.liqDir==="shorts at risk"?'g':o.liqDir==="longs at risk"?'r':'mu';
-      return `<tr><td class="s ${wl.has(o.key)?"on":""}" data-s="${o.key}">&#9733;</td>
-<td><a href="#" data-c="${o.key}">${o.base}</a>${star}</td>
-<td>${fp(o.price)}</td>
-<td class="${o.p24>=0?"g":"r"}">${o.p24==null?"-":o.p24.toFixed(2)+"%"}</td>
-<td class="${scC}"><b>${o.liqScore}</b></td>
-<td class="${dirC}">${o.liqDir||"-"}</td>
-<td>$${fm(o.oi)}</td>
-<td class="${o.fund<-0.02?"g":o.fund>0.05?"r":"mu"}">${o.fund==null?"-":o.fund.toFixed(4)+"%"}${o.fund>0.05?" (longs pay)":o.fund<-0.02?" (shorts pay)":""}</td>
-<td>$${fm(o.dv)}</td></tr>`;
-    }).join("")||'<tr><td colspan="9" style="text-align:center;color:#7a8392;padding:16px">Liquidation risk estimates build over a few minutes.</td></tr>';
-    $("capliq").textContent=`Liquidation risk is ESTIMATED from OI size + funding extremes. Real liquidation amounts require WebSocket streams.`;
-  }
-
-  if(vis==="flow"){
-    const fl=all.filter(o=>o.dv>=md&&o.cvd!=null).sort((a,b)=>(b.cvd??-999)-(a.cvd??-999)).slice(0,100);
-    $("tbflow").innerHTML=fl.map(o=>{
-      const div=o.cvd>2&&o.p15<0.5?'<span class="g">Bullish divergence</span>':o.cvd<-2&&o.p15>0.5?'<span class="r">Bearish divergence</span>':'<span class="mu">-</span>';
-      const star=o.pumping?'<span class="pump-star">&#9733;</span>':'';
-      return `<tr><td class="s ${wl.has(o.key)?"on":""}" data-s="${o.key}">&#9733;</td>
-<td><a href="#" data-c="${o.key}">${o.base}</a>${star}</td>
-<td>${fp(o.price)}</td>
-<td class="${o.p24>=0?"g":"r"}">${o.p24==null?"-":o.p24.toFixed(2)+"%"}</td>
-<td class="${o.cvd>2?"g":o.cvd<-2?"r":"mu"}">${o.cvd.toFixed(1)}%</td>
-<td class="${o.taker>52?"g":o.taker<48?"r":"mu"}">${o.taker==null?"...":o.taker.toFixed(1)+"%"}%</td>
-<td>${div}</td><td>${o.lsr==null?"-":o.lsr.toFixed(2)}</td>
-<td>${o.v15==null?"...":(o.v15>=0?"+":"")+Math.round(o.v15)+"%"}</td><td>$${fm(o.dv)}</td></tr>`;
-    }).join("")||'<tr><td colspan="10" style="text-align:center;color:#7a8392;padding:16px">Order flow fills in over a few minutes.</td></tr>';
-    $("capflow").textContent=`Order flow: CVD = (taker buys - taker sells) / total. Positive = aggressive buyers.`;
-  }
-
-  if(vis==="deriv"){
-    const dl=all.filter(o=>o.dv>=md).sort((a,b)=>Math.abs(b.oiPct??0)-Math.abs(a.oiPct??0)).slice(0,100);
-    $("tbderiv").innerHTML=dl.map(o=>{
-      const oiEx=Object.entries(o.oiBy||{}).map(([k,v])=>`${LET[k]}$${fm(v)}`).join(" ");
-      const star=o.pumping?'<span class="pump-star">&#9733;</span>':'';
-      return `<tr><td class="s ${wl.has(o.key)?"on":""}" data-s="${o.key}">&#9733;</td>
-<td><a href="#" data-c="${o.key}">${o.base}</a>${star}</td>
-<td>${fp(o.price)}</td>
-<td>$${fm(o.oi)}</td>
-<td class="${o.oiPct>=1?"g":o.oiPct<-1?"r":"mu"}">${o.oiPct==null?"...":(o.oiPct>=0?"+":"")+o.oiPct.toFixed(2)+"%"}${o.os!=null?" ("+o.os+"\u2191)":""}</td>
+<td class="${o.oiPct>=1?"g":"mu"}">${o.oiPct==null?"...":(o.oiPct>=0?"+":"")+o.oiPct.toFixed(2)+"%"}${o.os!=null?" ("+o.os+"\u2191)":""}</td>
 <td class="${o.oiZ>=2?"g":o.oiZ>=1?"yl":"mu"}">${o.oiZ==null?"...":o.oiZ.toFixed(1)}</td>
-<td class="ex">${oiEx||"-"}</td></tr>`;
-    }).join("")||'<tr><td colspan="7" style="text-align:center;color:#7a8392;padding:16px">Derivatives data loads over a few minutes.</td></tr>';
-    $("capderiv").textContent=`OI Z-score: standard deviations of the latest OI move vs recent history. >2 = abnormal.`;
-  }
-
-  if(vis==="mkt"){
-    let arr=all.filter(o=>o.dv>=md&&(!q||o.base.includes(q))&&(page!=="wl"||wl.has(o.key)));
-    arr.sort((a,b)=>{
-      const x=a[sk],y=b[sk];
-      if(sk==="base")return sd*(x<y?-1:1);
-      const d=(x??-1e12)-(y??-1e12);
-      return d?sd*d:(b.dv-a.dv);
-    });
-    $("tb").innerHTML=arr.slice(0,400).map(o=>{
-      const sc=o.score>=7?"h":o.score>=4?"m":"",st=wl.has(o.key);
-      const star=o.pumping?'<span class="pump-star">&#9733;</span>':'';
-      return `<tr><td class="s ${st?"on":""}" data-s="${o.key}">&#9733;</td>
-<td><a href="#" data-c="${o.key}">${o.base}</a>${star}${o.tf?'<span class="tag" style="background:#7d8b99">STOCK</span>':""}${o.pre?'<span class="tag">PRE-PUMP</span>':""}</td>
-<td>${fp(o.price)}</td><td class="${o.p24>=0?"g":"r"}">${o.p24==null?"-":o.p24.toFixed(2)+"%"}</td>
-<td>${o.v15==null?"...":(o.v15>=0?"+":"")+Math.round(o.v15)+"%"}${(o.vs!=null&&o.vs>=3)?`<span class="rise">(+${o.vs})</span>`:""}</td>
-<td>${o.v4==null?"...":(o.v4>=0?"+":"")+Math.round(o.v4)+"%"}</td>
-<td>${o.v24==null?"...":(o.v24>=0?"+":"")+Math.round(o.v24)+"%"}</td>
-<td class="${o.oiPct>=1?"g":"mu"}">${o.oiPct==null?"...":(o.oiPct>=0?"+":"")+o.oiPct.toFixed(1)+"%"}</td>
-<td>$${fm(o.dv)}</td><td>$${fm(o.oi)}</td>
-<td><span class="sc ${sc}">${o.at?o.score:"-"}</span></td></tr>`;
-    }).join("")||'<tr><td colspan="11" style="text-align:center;color:#7a8392;padding:16px">Nothing here yet.</td></tr>';
-  }
+<td>${o.mcap?"$"+fm(o.mcap):'<span class="mu">-</span>'}</td>
+</tr>`;
+  }).join("")||'<tr><td colspan="11" class="empty">Nothing yet. Loading over the next few minutes.</td></tr>';
 }
 
-document.querySelectorAll("th[data-k]").forEach(th=>th.onclick=()=>{
-  const k=th.dataset.k;sd=k===sk?-sd:(k==="base"?1:-1);sk=k;render();
-});
-document.querySelectorAll("#pages button").forEach(b=>b.onclick=()=>{
-  page=b.dataset.p;
-  document.querySelectorAll("#pages button").forEach(x=>x.classList.toggle("on",x===b));
-  document.querySelectorAll(".pg").forEach(x=>x.classList.toggle("on",x.id==="pg-"+(page==="wl"?"mkt":page)));
-  render();
+document.querySelectorAll("th[data-sk]").forEach(th=>th.onclick=()=>{
+  const k=th.dataset.sk;sd=k===sk?-sd:(k==="base"?1:-1);sk=k;render();
 });
 document.body.onclick=e=>{
   const d=e.target.dataset||{};
-  if(d.c&&coins.get(d.c)){e.preventDefault();window.open(link(coins.get(d.c)),"_blank","noopener");return}
-  const n=d.s;if(!n)return;
-  wl.has(n)?wl.delete(n):wl.add(n);saveWl();render();
+  if(d.c&&coins.get(d.c)){e.preventDefault();window.open(link(coins.get(d.c)),"_blank","noopener")}
 };
 FILTERS.forEach(id=>{if($(id)){$(id).oninput=()=>{saveFilters();render()};$(id).onchange=saveFilters}});
 let qT=null;
 $("q").oninput=()=>{saveFilters();clearTimeout(qT);qT=setTimeout(render,180)};
-$("rf").onclick=()=>{left=+$("ri").value;loadAll().then(render)};
-
-const ntfBtn=$("ntf");
-function refreshNtf(){ntfBtn.classList.toggle("on",alerts);ntfBtn.innerHTML=alerts?"&#128276; Alerts on":"&#128276; Alerts off";}
-refreshNtf();
-ntfBtn.onclick=async()=>{
-  if(!window.Notification){alert("Notifications not supported.");return}
-  const p=await Notification.requestPermission();
-  alerts=p==="granted";refreshNtf();
-};
-
-async function tickBtc(){
-  try{
-    const k=await get(BF+"/klines?symbol=BTCUSDT&interval=1h&limit=25");
-    btcP1=(+k[k.length-1][4]/+k[k.length-2][4]-1)*100;
-    btcP24=(+k[k.length-1][4]/+k[0][4]-1)*100;
-    const s=v=>(v>=0?"+":"")+v.toFixed(2)+"%";
-    const risk=btcP1<-1.5?' <span class="r">&#9888; risk-off</span>':'';
-    $("btc").innerHTML=`BTC &nbsp;<b class="${btcP1<-1?"r":btcP1>1?"g":""}">1h ${s(btcP1)}</b> &middot; <b class="${btcP24<0?"r":"g"}">24h ${s(btcP24)}</b>${risk}`;
-  }catch(e){}
-}
+$("rf").onclick=()=>loadAll().then(render);
 
 (async()=>{
-  renderSrc();
   await loadAll();
-  tickBtc();
-  left=+$("ri").value;
   render();
-  // main light schedulers
   setInterval(()=>tickHist("bn"),400);
   setInterval(()=>tickHist("by"),400);
   setInterval(()=>tickHist("hl"),1500);
   setInterval(tickOi,600);
-  setInterval(()=>tickFlow("bn"),800);
-  setInterval(tickBtc,45000);
   setInterval(loadMcap,300000);
-  setInterval(()=>{
-    left--;
-    if(left<=0){left=+$("ri").value;loadAll()}
-    if(Date.now()-lastR<1900)return;
-    render();
-  },1000);
+  setInterval(()=>{if(Date.now()-lastR<1900)return;render()},1000);
 })();
 </script>
 </body>
